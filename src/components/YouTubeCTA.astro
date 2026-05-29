@@ -1,0 +1,32 @@
+---
+import { site } from '../config/site';
+
+interface Props {
+  videoId?: string;
+  title?: string;
+}
+
+const {
+  videoId,
+  title = '¿Prefieres verlo en video?',
+} = Astro.props;
+
+const videoUrl = videoId
+  ? `https://www.youtube.com/watch?v=${videoId}`
+  : site.youtube.channelUrl;
+---
+
+<aside class="youtube-cta">
+  <p class="youtube-cta-title">{title}</p>
+  <p class="youtube-cta-text">
+  Mira el tutorial completo en el canal de {site.youtube.channelName}.
+  </p>
+  <a
+    class="button"
+    href={videoUrl}
+    rel="noopener noreferrer"
+    target="_blank"
+  >
+    Ver en YouTube
+  </a>
+</aside>

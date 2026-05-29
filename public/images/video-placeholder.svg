@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270" role="img" aria-label="Miniatura de video">
+  <rect width="480" height="270" fill="#0f172a" />
+  <rect x="1" y="1" width="478" height="268" fill="#1e293b" stroke="#334155" />
+  <circle cx="240" cy="135" r="36" fill="#2563eb" />
+  <polygon points="228,118 228,152 258,135" fill="#ffffff" />
+  <text x="240" y="220" text-anchor="middle" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="16">
+    Tutorial en video
+  </text>
+</svg>

@@ -1,0 +1,49 @@
+---
+import PillarLayout from '../layouts/PillarLayout.astro';
+import { getArticlesByPillar, getArticleUrl } from '../lib/articles';
+
+const pillar = 'sql';
+const articles = await getArticlesByPillar(pillar);
+
+const title = 'Aprender SQL desde cero';
+const description =
+  'Guías prácticas para aprender SQL: consultas, bases de datos y herramientas como SQL Server Management Studio. Tutoriales en español para desarrolladores.';
+const keywords = [
+  'aprender SQL',
+  'tutorial SQL',
+  'SQL para principiantes',
+  'SQL Server',
+  'consultas SQL',
+];
+
+const breadcrumbs = [
+  { label: 'Inicio', href: '/' },
+  { label: 'SQL', href: '/sql' },
+];
+---
+
+<PillarLayout
+  title={title}
+  description={description}
+  canonical="/sql"
+  keywords={keywords}
+  breadcrumbs={breadcrumbs}
+>
+  <section class="pillar-topics" aria-labelledby="sql-articles-title">
+    <h2 id="sql-articles-title">Artículos de SQL</h2>
+    {articles.length > 0 ? (
+      <ul class="article-list">
+        {articles.map((article) => (
+          <li>
+            <a href={getArticleUrl(article)}>
+              <span class="related-title">{article.data.title}</span>
+              <span class="related-description">{article.data.description}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p>Próximamente publicaremos más tutoriales de SQL.</p>
+    )}
+  </section>
+</PillarLayout>

@@ -1,0 +1,85 @@
+---
+interface Props {
+  videoId: string;
+  title: string;
+  caption?: string;
+}
+
+const { videoId, title, caption } = Astro.props;
+
+const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}`;
+const thumbnailUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
+const embedTitle = `Video: ${title}`;
+---
+
+<figure class="youtube-embed-figure">
+  <div class="youtube-embed">
+    <a
+      class="youtube-facade"
+      href={watchUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`Reproducir ${embedTitle}`}
+    >
+      <img
+        src={thumbnailUrl}
+        alt={`Miniatura del video ${title}`}
+        width="1280"
+        height="720"
+        loading="lazy"
+        decoding="async"
+      />
+      <span class="youtube-play" aria-hidden="true">▶</span>
+    </a>
+    <noscript>
+      <iframe
+        src={embedUrl}
+        title={embedTitle}
+        width="560"
+        height="315"
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allowfullscreen
+      />
+    </noscript>
+  </div>
+
+  {(caption ?? title) && (
+    <figcaption class="youtube-embed-caption">
+      {caption ?? title}
+      {' · '}
+      <a href={watchUrl} rel="noopener noreferrer" target="_blank">
+        Ver en YouTube
+      </a>
+    </figcaption>
+  )}
+</figure>
+
+<script define:vars={{ embedUrl, embedTitle }}>
+  const figure = document.currentScript?.previousElementSibling;
+  const container = figure?.querySelector('.youtube-embed');
+  const facade = container?.querySelector('.youtube-facade');
+
+  if (!container || !facade) {
+    console.warn('YouTubeEmbed: no se pudo inicializar el reproductor.');
+  } else {
+    facade.addEventListener('click', (event) => {
+      event.preventDefault();
+
+      const iframe = document.createElement('iframe');
+      iframe.src = `${embedUrl}?autoplay=1`;
+      iframe.title = embedTitle;
+      iframe.width = '560';
+      iframe.height = '315';
+      iframe.loading = 'lazy';
+      iframe.allow =
+        'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+      iframe.allowFullscreen = true;
+
+      container.replaceChildren(iframe);
+    });
+  }
+</script>

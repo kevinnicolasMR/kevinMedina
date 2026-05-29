@@ -1,0 +1,27 @@
+---
+import type { ArticleEntry } from '../lib/articles';
+import { getArticleUrl } from '../lib/articles';
+
+interface Props {
+  articles: ArticleEntry[];
+  title?: string;
+}
+
+const { articles, title = 'Artículos relacionados' } = Astro.props;
+---
+
+{articles.length > 0 && (
+  <section class="related-articles">
+    <h2>{title}</h2>
+    <ul>
+      {articles.map((article) => (
+        <li>
+          <a href={getArticleUrl(article)}>
+            <span class="related-title">{article.data.title}</span>
+            <span class="related-description">{article.data.description}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+)}

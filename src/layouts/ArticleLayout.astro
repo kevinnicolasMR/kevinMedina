@@ -1,0 +1,75 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import TableOfContents from '../components/TableOfContents.astro';
+import YouTubeCTA from '../components/YouTubeCTA.astro';
+import RelatedArticles from '../components/RelatedArticles.astro';
+import type { ArticleEntry } from '../lib/articles';
+import { getArticleUrl } from '../lib/articles';
+import {
+  buildArticleBreadcrumbs,
+  buildArticleSchema,
+  buildBreadcrumbSchema,
+  buildVideoObjectSchema,
+} from '../lib/schema';
+import type { MarkdownHeading } from 'astro';
+
+interface Props {
+  article: ArticleEntry;
+  headings: MarkdownHeading[];
+  relatedArticles: ArticleEntry[];
+}
+
+const { article, headings, relatedArticles } = Astro.props;
+const canonical = getArticleUrl(article);
+const breadcrumbs = buildArticleBreadcrumbs(article);
+
+const schemas = [
+  buildBreadcrumbSchema(breadcrumbs),
+  buildArticleSchema(article, canonical),
+];
+
+const videoSchema = buildVideoObjectSchema(article, canonical);
+if (videoSchema) {
+  schemas.push(videoSchema);
+}
+---
+
+<BaseLayout
+  title={article.data.title}
+  description={article.data.description}
+  canonical={canonical}
+  ogType="article"
+  publishedDate={article.data.publishedDate}
+  updatedDate={article.data.updatedDate}
+  keywords={article.data.keywords}
+  schemas={schemas}
+>
+  <article class="article">
+    <Breadcrumbs items={breadcrumbs} />
+
+    <header class="article-header">
+      <p class="article-meta">
+        <time datetime={article.data.publishedDate.toISOString()}>
+          {article.data.publishedDate.toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}
+        </time>
+      </p>
+      <h1>{article.data.title}</h1>
+      <p class="article-description">{article.data.description}</p>
+    </header>
+
+    <div class="article-layout">
+      <div class="article-content prose">
+        <slot />
+      </div>
+      <TableOfContents headings={headings} />
+    </div>
+
+    <YouTubeCTA videoId={article.data.youtubeVideoId} />
+    <RelatedArticles articles={relatedArticles} />
+  </article>
+</BaseLayout>
