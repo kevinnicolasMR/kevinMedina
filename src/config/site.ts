@@ -7,7 +7,7 @@ export const site = {
   title: 'Kevin Medina Dev — Programación y SQL',
   description:
     'Tutoriales de programación y SQL en español. Aprende con artículos claros y videos en YouTube.',
-  url: 'https://tudominio.com',
+  url: 'https://kevinmedinarobles.com/',
   lang: 'es',
   locale: 'es_ES',
   author: {
@@ -28,7 +28,7 @@ export const site = {
     ctaHref: '#tutoriales',
   },
   youtube: {
-    channelUrl: 'https://www.youtube.com/@kevinmedinarobles', // TODO: verificar URL oficial del canal
+    channelUrl: 'https://www.youtube.com/@kevinmedinarobles', 
     channelName: 'Kevin Medina',
   },
   defaultOgImage: '/og-default.png',

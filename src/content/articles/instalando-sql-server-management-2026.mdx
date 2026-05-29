@@ -1,5 +1,5 @@
 ---
-title: 'Cómo instalar SQL Server Management Studio 2026'
+title: 'Cómo instalar SQL Server Management Studio + SQL Server Express en Windows'
 description: 'Guía paso a paso para instalar SQL Server Management Studio 2026 (SSMS) en Windows: requisitos, descarga oficial y primeros pasos.'
 pillar: sql
 slug: instalando-sql-server-management-2026
@@ -29,75 +29,49 @@ import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
   TODO: Validar número de versión real publicada por Microsoft.
 </Callout>
 
-SQL Server Management Studio (SSMS) es la herramienta principal para administrar SQL Server y escribir consultas. En esta guía aprenderás a **instalar SQL Server Management Studio 2026** de forma segura desde fuentes oficiales.
 
-## Requisitos previos
+## Cómo instalar SQL Server Management Studio + SQL Server Express en Windows
 
-Antes de instalar SSMS, revisa que tu equipo cumpla los requisitos mínimos.
+Instalar **SQL Server Express** y **SQL Server Management Studio** puede parecer confuso al principio, sobre todo porque Microsoft separa el motor de base de datos de la herramienta visual que usamos para administrarlo.
 
-<Callout type="info" title="Requisitos pendientes de verificación">
-  TODO: Confirmar versión mínima de Windows soportada.
-  TODO: Confirmar dependencias (.NET Framework o .NET Desktop Runtime).
-  TODO: Confirmar espacio en disco recomendado por Microsoft.
-</Callout>
+En este tutorial vas a ver cómo instalar ambas cosas paso a paso:
 
-Requisitos orientativos (verificar antes de publicar):
+- **SQL Server Express**, que es el motor de base de datos.
+- **SQL Server Management Studio**, también conocido como **SSMS**, que es la interfaz visual para gestionar bases de datos, tablas, consultas y conexiones.
+- La configuración inicial de la instancia.
+- El inicio de sesión con autenticación de Windows o usuario `sa`.
+- Qué revisar si SQL Server no conecta o aparece como inaccesible.
 
-- Windows 10 o Windows 11 de 64 bits
-- Permisos de administrador para instalar
-- Conexión a internet para la descarga
+La idea es que puedas dejar SQL Server funcionando en tu computadora para practicar, estudiar, hacer consultas, crear bases de datos o trabajar con proyectos locales.
 
-## Descargar SSMS desde Microsoft
+---
 
-Descarga siempre desde el sitio oficial de Microsoft.
+## Qué diferencia hay entre SQL Server Express y SQL Server Management Studio
 
-<Callout type="warning">
-  TODO: Reemplazar la URL provisional por el enlace oficial actual de descarga de SSMS 2026.
-</Callout>
+Antes de instalar nada, conviene entender una diferencia clave.
 
-Enlace provisional (verificar):
+**SQL Server Express** es el motor. Es decir, es el servicio que permite crear y administrar bases de datos relacionales en tu computadora.
 
-- [Descarga de SQL Server Management Studio](https://learn.microsoft.com/sql/ssms/download-sql-server-management-studio-ssms)
+**SQL Server Management Studio**, o **SSMS**, es la herramienta visual que usamos para conectarnos a ese motor y trabajar de una forma más cómoda.
 
-## Instalación paso a paso
+Sin SSMS también podrías manejar SQL Server desde consola, pero para la mayoría de casos no tiene mucho sentido complicarse. Hoy lo normal es usar una interfaz visual para crear tablas, escribir queries, hacer backups, revisar datos y gestionar instancias.
 
-### 1. Ejecutar el instalador
+Dicho de forma simple:
 
-1. Abre el archivo `.exe` descargado.
-2. Acepta los términos de licencia.
-3. Elige la ruta de instalación si quieres personalizarla.
+| Herramienta | Para qué sirve |
+|---|---|
+| SQL Server Express | Es el motor de base de datos |
+| SQL Server Management Studio | Es la interfaz visual para administrar SQL Server |
 
-### 2. Completar la instalación
+Por eso en este tutorial vamos a instalar primero el motor y después la herramienta de administración.
 
-1. Haz clic en **Instalar**.
-2. Espera a que finalice el proceso.
-3. Reinicia el equipo si el instalador lo solicita.
+---
 
-### 3. Abrir SSMS por primera vez
+## Descargar SQL Server Express
 
-1. Busca **Microsoft SQL Server Management Studio** en el menú Inicio.
-2. Conéctate a una instancia local o remota de SQL Server.
-3. Crea una consulta de prueba:
+Lo primero que tienes que hacer es descargar **SQL Server Express** desde la página oficial de Microsoft.
 
-```sql
-SELECT @@VERSION AS version_sql_server;
-```
+Puedes buscar en Google:
 
-## Problemas frecuentes
-
-### El instalador no inicia
-
-- Ejecuta el instalador como administrador.
-- Verifica que tu antivirus no bloquee la descarga.
-
-### No aparece la versión 2026
-
-<Callout type="tip">
-  TODO: Confirmar si Microsoft mantiene el nombre "SSMS 20.x" o "SSMS 2026" en la documentación oficial.
-</Callout>
-
-Revisa la página de descargas de Microsoft y usa la versión estable más reciente disponible.
-
-## Siguiente paso
-
-Cuando tengas SSMS instalado, continúa con la guía para [aprender SQL](/sql) y practicar consultas básicas.
+```txt
+SQL Server Express download
