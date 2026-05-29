@@ -5,14 +5,75 @@ const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer">
-  <div class="container footer-inner">
-    <p>
-      © {year} {site.author.name}. Tutoriales de programación en español.
-    </p>
-    <p>
-      <a href={site.youtube.channelUrl} rel="noopener noreferrer" target="_blank">
-        Suscríbete en YouTube
-      </a>
-    </p>
+  <div class="container footer-grid">
+    <div class="footer-column">
+      <p class="footer-brand">{site.name}</p>
+      <p class="footer-tagline">{site.description}</p>
+    </div>
+
+    <div class="footer-column">
+      <h3>Navegación</h3>
+      <ul class="footer-links">
+        {site.navigation.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              {...('external' in item && item.external
+                ? { rel: 'noopener noreferrer', target: '_blank' }
+                : {})}
+            >
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="footer-column">
+      <h3>Recursos</h3>
+      <ul class="footer-links">
+        <li><a href="/sql">Aprender SQL</a></li>
+        <li><a href="/#youtube">Videos</a></li>
+        <li><a href="/#blog">Blog</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-column">
+      <h3>Conecta</h3>
+      <ul class="footer-links">
+        {site.social.map((link) => (
+          <li>
+            <a href={link.href} rel="noopener noreferrer" target="_blank">
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      <p class="footer-newsletter-label">{site.footer.newsletterNote}</p>
+      <form class="footer-newsletter" action="#" method="post">
+        <label class="sr-only" for="newsletter-email">Correo electrónico</label>
+        <input
+          id="newsletter-email"
+          type="email"
+          name="email"
+          placeholder="tu@email.com"
+          autocomplete="email"
+          disabled
+        />
+        <button type="button" disabled>Próximamente</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="container footer-bottom">
+    <p>© {year} {site.author.name}. Todos los derechos reservados.</p>
+    <ul class="footer-legal">
+      {site.footer.legal.map((item) => (
+        <li>
+          <a href={item.href}>{item.label}</a>
+        </li>
+      ))}
+    </ul>
   </div>
 </footer>

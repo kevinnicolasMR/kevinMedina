@@ -17,6 +17,7 @@ interface Props {
   keywords?: string[];
   schemas?: Record<string, unknown>[];
   noindex?: boolean;
+  fullWidth?: boolean;
 }
 
 const {
@@ -30,6 +31,7 @@ const {
   keywords,
   schemas = [],
   noindex,
+  fullWidth = false,
 } = Astro.props;
 
 const jsonLd = [buildWebSiteSchema(), ...schemas];
@@ -53,7 +55,7 @@ const jsonLd = [buildWebSiteSchema(), ...schemas];
   </head>
   <body>
     <Header />
-    <main id="main-content" class="container">
+    <main id="main-content" class:list={[!fullWidth && 'container', 'page-main']}>
       <slot />
     </main>
     <Footer />

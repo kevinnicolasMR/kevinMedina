@@ -1,0 +1,35 @@
+---
+import { site } from '../../config/site';
+import { home } from '../../config/home';
+import SectionHeading from './SectionHeading.astro';
+
+const { about } = home;
+---
+
+<section class="home-section about-section" id={about.id} aria-labelledby="about-title">
+  <div class="container">
+    <SectionHeading title={about.title} id="about-title" centered />
+
+    <div class="about-grid">
+      <img
+        src={site.developer.image}
+        alt={site.developer.imageAlt}
+        width="280"
+        height="280"
+        loading="lazy"
+        decoding="async"
+        class="about-avatar"
+      />
+      <div class="about-content">
+        {about.paragraphs.map((paragraph) => (
+          <p>{paragraph}</p>
+        ))}
+        <p>
+          <a class="button" href={site.youtube.channelUrl} rel="noopener noreferrer" target="_blank">
+            Ver canal de YouTube
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>

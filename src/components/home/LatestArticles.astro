@@ -1,0 +1,61 @@
+---
+import type { ArticleEntry } from '../../lib/articles';
+import { getArticleThumbnail, getArticleUrl } from '../../lib/articles';
+import { home } from '../../config/home';
+import SectionHeading from './SectionHeading.astro';
+
+interface Props {
+  articles: ArticleEntry[];
+}
+
+const { articles } = Astro.props;
+const { blog } = home;
+const latest = articles.slice(0, blog.limit);
+---
+
+<section class="home-section blog-section" id={blog.id} aria-labelledby="blog-title">
+  <div class="container">
+    <SectionHeading
+      title={blog.title}
+      description={blog.description}
+      id="blog-title"
+      centered
+    />
+
+    {latest.length > 0 ? (
+      <ul class="blog-grid">
+        {latest.map((article) => (
+          <li>
+            <article class="blog-card">
+              <a href={getArticleUrl(article)} class="blog-card-link">
+                <img
+                  src={getArticleThumbnail(article)}
+                  alt=""
+                  width="480"
+                  height="270"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="blog-card-body">
+                  <span class="blog-card-tag">{article.data.pillar.toUpperCase()}</span>
+                  <h3>{article.data.title}</h3>
+                  <p>{article.data.description}</p>
+                  <time datetime={article.data.publishedDate.toISOString()}>
+                    {article.data.publishedDate.toLocaleDateString('es-ES', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </time>
+                  <span class="blog-card-more">Leer más →</span>
+                </span>
+              </a>
+            </article>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="home-empty">Próximamente publicaré más artículos.</p>
+    )}
+  </div>
+</section>

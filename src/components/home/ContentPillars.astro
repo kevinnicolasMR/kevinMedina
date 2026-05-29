@@ -1,0 +1,29 @@
+---
+import { home } from '../../config/home';
+import SectionHeading from './SectionHeading.astro';
+
+const { pillars } = home;
+---
+
+<section class="home-section pillars-section" aria-labelledby="pillars-title">
+  <div class="container">
+    <SectionHeading
+      title={pillars.title}
+      description={pillars.description}
+      id="pillars-title"
+      centered
+    />
+
+    <ul class="pillars-grid">
+      {pillars.items.map((item) => (
+        <li>
+          <a class="pillar-card" href={item.href}>
+            <span class="pillar-icon" aria-hidden="true">{item.icon}</span>
+            <h3>{item.title}</h3>
+            <p>{item.description}</p>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

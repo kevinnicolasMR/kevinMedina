@@ -1,0 +1,16 @@
+---
+import { home } from '../../config/home';
+---
+
+<section class="social-proof" aria-label="Prueba social">
+  <div class="container social-proof-inner">
+    <ul class="social-proof-list">
+      {home.stats.map((stat) => (
+        <li class="social-proof-item">
+          <strong>{stat.value}</strong>
+          <span>{stat.label}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

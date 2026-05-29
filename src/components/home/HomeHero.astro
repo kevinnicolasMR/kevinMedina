@@ -1,0 +1,42 @@
+---
+import { site } from '../../config/site';
+import { home } from '../../config/home';
+
+const { developer } = site;
+const { hero } = home;
+---
+
+<section class="home-hero" aria-labelledby="home-hero-title">
+  <div class="home-hero-grid">
+    <div class="home-hero-media">
+      <img
+        src={developer.image}
+        alt={developer.imageAlt}
+        width="480"
+        height="480"
+        loading="eager"
+        decoding="async"
+        class="home-hero-image"
+      />
+    </div>
+
+    <div class="home-hero-content">
+      <p class="home-hero-eyebrow">{developer.role}</p>
+      <h1 id="home-hero-title">{hero.headline}</h1>
+      <p class="home-hero-tagline">{hero.tagline}</p>
+      <div class="home-hero-actions">
+        <a
+          class="button button-youtube"
+          href={hero.primaryCta.href}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          {hero.primaryCta.label}
+        </a>
+        <a class="button button-outline" href={hero.secondaryCta.href}>
+          {hero.secondaryCta.label}
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

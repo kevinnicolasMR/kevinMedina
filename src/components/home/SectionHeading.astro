@@ -1,0 +1,15 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+  id?: string;
+  centered?: boolean;
+}
+
+const { title, description, id, centered = false } = Astro.props;
+---
+
+<header class:list={['section-heading', centered && 'section-heading-center']}>
+  <h2 id={id}>{title}</h2>
+  {description && <p>{description}</p>}
+</header>

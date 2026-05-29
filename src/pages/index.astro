@@ -1,9 +1,18 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import DeveloperHero from '../components/DeveloperHero.astro';
-import VideoPagesGrid from '../components/VideoPagesGrid.astro';
+import HomeHero from '../components/home/HomeHero.astro';
+import SocialProofBar from '../components/home/SocialProofBar.astro';
+import AboutSection from '../components/home/AboutSection.astro';
+import FeaturedVideos from '../components/home/FeaturedVideos.astro';
+import ContentPillars from '../components/home/ContentPillars.astro';
+import ExperienceSection from '../components/home/ExperienceSection.astro';
+import ServicesSection from '../components/home/ServicesSection.astro';
+import LatestArticles from '../components/home/LatestArticles.astro';
+import TestimonialsSection from '../components/home/TestimonialsSection.astro';
+import FinalCTASection from '../components/home/FinalCTASection.astro';
 import { site } from '../config/site';
 import { getPublishedArticles } from '../lib/articles';
+import { buildPersonSchema } from '../lib/schema';
 
 const articles = await getPublishedArticles();
 ---
@@ -12,8 +21,16 @@ const articles = await getPublishedArticles();
   title={site.title}
   description={site.description}
   canonical="/"
-  keywords={['programación', 'SQL', 'tutoriales', 'YouTube', 'Kevin Medina']}
+  keywords={['programación', 'SQL', 'Java', 'tutoriales', 'YouTube', 'Kevin Medina']}
+  schemas={[buildPersonSchema()]}
+  fullWidth
 >
-  <DeveloperHero />
-  <VideoPagesGrid articles={articles} />
+  <div class="home-page">
+    <div class="container">
+      <HomeHero />
+    </div>
+    <FeaturedVideos articles={articles} />
+    <ContentPillars />
+    <FinalCTASection />
+  </div>
 </BaseLayout>

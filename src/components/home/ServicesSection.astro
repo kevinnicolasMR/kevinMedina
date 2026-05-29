@@ -1,0 +1,27 @@
+---
+import { home } from '../../config/home';
+import SectionHeading from './SectionHeading.astro';
+
+const { services } = home;
+---
+
+<section class="home-section services-section" id={services.id} aria-labelledby="services-title">
+  <div class="container">
+    <SectionHeading
+      title={services.title}
+      description={services.description}
+      id="services-title"
+      centered
+    />
+
+    <ul class="services-grid">
+      {services.items.map((item) => (
+        <li class="service-card">
+          <span class="service-icon" aria-hidden="true">{item.icon}</span>
+          <h3>{item.title}</h3>
+          <p>{item.description}</p>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
