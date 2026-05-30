@@ -1,0 +1,49 @@
+---
+import PillarLayout from '../layouts/PillarLayout.astro';
+import { getArticlesByPillar, getArticleUrl } from '../lib/articles';
+
+const pillar = 'carrera';
+const articles = await getArticlesByPillar(pillar);
+
+const title = 'Carrera y primer empleo en programación';
+const description =
+  'Guías sobre cómo conseguir tu primer trabajo como programador, portfolio, LinkedIn, networking y estrategia para juniors en 2026.';
+const keywords = [
+  'primer trabajo programador',
+  'empleo junior desarrollo',
+  'carrera programación',
+  'LinkedIn desarrolladores',
+  'portfolio programador',
+];
+
+const breadcrumbs = [
+  { label: 'Inicio', href: '/' },
+  { label: 'Carrera', href: '/carrera' },
+];
+---
+
+<PillarLayout
+  title={title}
+  description={description}
+  canonical="/carrera"
+  keywords={keywords}
+  breadcrumbs={breadcrumbs}
+>
+  <section class="pillar-topics" aria-labelledby="carrera-articles-title">
+    <h2 id="carrera-articles-title">Artículos de carrera</h2>
+    {articles.length > 0 ? (
+      <ul class="article-list">
+        {articles.map((article) => (
+          <li>
+            <a href={getArticleUrl(article)}>
+              <span class="related-title">{article.data.title}</span>
+              <span class="related-description">{article.data.description}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p>Próximamente publicaremos más guías sobre carrera y empleo en IT.</p>
+    )}
+  </section>
+</PillarLayout>

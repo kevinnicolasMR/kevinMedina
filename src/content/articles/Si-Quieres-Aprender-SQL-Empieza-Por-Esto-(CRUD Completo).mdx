@@ -1,0 +1,252 @@
+---
+title: 'Si quieres aprender SQL, empieza por esto: CRUD completo en SQL Server'
+description: 'Tutorial práctico de SQL para principiantes: crear base de datos y tabla de clientes, INSERT, SELECT con WHERE, UPDATE y DELETE en SQL Server Management Studio.'
+pillar: sql
+slug: si-quieres-aprender-sql-empieza-por-esto-crud-completo
+publishedDate: 2026-05-29
+keywords:
+  - aprender SQL desde cero
+  - CRUD SQL Server
+  - tutorial SQL principiantes
+  - CREATE TABLE SQL Server
+  - INSERT INTO SQL
+  - SELECT WHERE SQL
+  - SQL Server Management Studio
+youtubeVideoId: cDp-ZqzSZaA
+relatedSlugs:
+  - instalando-sql-server-management-2026
+---
+
+import Callout from '../../components/Callout.astro';
+import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
+
+<YouTubeEmbed
+  videoId="cDp-ZqzSZaA"
+  title="Si quieres aprender SQL, empieza por esto (CRUD completo)"
+  caption="Tutorial en video: CRUD en SQL Server — base de datos, tablas, consultas, filtros y modificaciones"
+/>
+
+<Callout type="info" title="Requisito previo">
+  Para seguir esta guía necesitas tener **SQL Server Express** y **SQL Server Management Studio (SSMS)** instalados en Windows. Si aún no los tienes, revisa primero la guía de [instalación de SSMS y SQL Server Express](/sql/instalando-sql-server-management-2026).
+</Callout>
+
+<Callout type="tip" title="Cómo sacarle provecho a esta guía">
+  No hace falta memorizar todos los comandos de una. Lo que más ayuda es **practicar**: anota cada comando en un bloc o hoja de referencia y repite los ejemplos en tu propia base de datos. A programar se aprende programando.
+</Callout>
+
+## Si quieres aprender SQL, empieza por el CRUD
+
+Si sos programador —o estás en camino de serlo— tarde o temprano vas a trabajar con **bases de datos**: tablas de clientes, usuarios, pedidos, productos y mucho más. En el día a día de un proyecto real no alcanza con “saber que existe SQL”: tenés que poder **crear**, **leer**, **actualizar** y **borrar** datos de forma ágil.
+
+Eso se resume en cuatro operaciones que en inglés llamamos **CRUD**:
+
+| Operación | Comando SQL (reservado) | Para qué sirve |
+|---|---|---|
+| **C**reate | `CREATE`, `INSERT` | Crear bases de datos, tablas y filas |
+| **R**ead | `SELECT` | Consultar y filtrar datos |
+| **U**pdate | `UPDATE` | Modificar registros existentes |
+| **D**elete | `DELETE` | Eliminar registros |
+
+En este tutorial vas a ver el CRUD aplicado a un caso concreto: una tabla **Clientes** con columnas como nombre, email, celular y estado activo. Todo desde **SQL Server Management Studio**, con comandos que podés copiar, ejecutar y adaptar.
+
+---
+
+## Dónde encaja la base de datos en una aplicación real
+
+Antes de escribir SQL, conviene ubicar el panorama.
+
+Cuando usás una app —YouTube, Instagram, un sistema interno de una empresa— el **frontend** pide datos al **servidor**. El servidor ejecuta la lógica y, cuando hace falta persistencia, envía una **consulta** a la **base de datos**. La base devuelve la información y el servidor la entrega al cliente.
+
+En este nivel estás gestionando los **datos crudos**: nombres, emails, IDs, estados. Esos datos tienen **tipos** definidos en la tabla (texto, número, etc.) para que el motor valide lo que guardás.
+
+No necesitás dominar todo el ecosistema de bases de datos en un solo día. El mundo SQL es amplio; esta guía cubre la base práctica del CRUD para que después puedas avanzar a relaciones entre tablas, claves foráneas y consultas más complejas.
+
+---
+
+## Crear una base de datos en SSMS
+
+Asumimos que ya tenés SSMS abierto y conectado a tu instancia local (por ejemplo `localhost` o `(localdb)\...`).
+
+### Opción visual
+
+1. En el Explorador de objetos, clic derecho en **Databases**.
+2. **New Database…**
+3. Elegí un nombre (ejemplo: `EmpresaPlus`) y confirmá con **OK**.
+
+### Opción con comando
+
+En una ventana de consulta nueva:
+
+```sql
+CREATE DATABASE EmpresaPlus;
+```
+
+Después de crearla, si no la ves en el árbol: clic derecho en **Databases** → **Refresh**.
+
+<Callout type="tip" title="Base de datos activa">
+  Las consultas se ejecutan contra la base de datos **seleccionada** en la barra de herramientas. Si corrés un `SELECT` sobre `Clientes` estando en otra base, vas a recibir error de objeto inexistente. Verificá siempre que estés en `EmpresaPlus` (o la que hayas creado) antes de crear tablas o insertar datos.
+</Callout>
+
+---
+
+## Crear la tabla Clientes con CREATE TABLE
+
+Vamos a replicar una estructura típica de negocio:
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `IDCliente` | `INT` | Clave primaria, autoincremental |
+| `Nombre` | `VARCHAR(50)` | Texto, puede ser opcional según reglas de negocio |
+| `Email` | `VARCHAR(100)` | Texto |
+| `Celular` | `INT` o `BIGINT` | Números largos pueden requerir `BIGINT` |
+| `ActivoSN` | `VARCHAR(1)` | `S` / `N` (o otro código que definas) |
+
+También podés crear la tabla desde la UI (**Tables** → clic derecho → **New Table**), pero en proyectos reales y en entrevistas técnicas suele pedirse el script:
+
+```sql
+CREATE TABLE Clientes (
+  IDCliente INT PRIMARY KEY IDENTITY(1, 1),
+  Nombre VARCHAR(50) NULL,
+  Email VARCHAR(100) NULL,
+  Celular INT NULL,
+  ActivoSN VARCHAR(1) NULL
+);
+```
+
+Conceptos clave:
+
+- **`PRIMARY KEY`**: identificador único por fila; no se repite el mismo `IDCliente`.
+- **`IDENTITY(1, 1)`**: autoincremento; el motor asigna 1, 2, 3… sin que lo escribas en cada `INSERT`.
+- **`NULL` / `NOT NULL`**: define si la columna puede quedar vacía. En el video, `IDCliente` suele ser obligatorio; otras columnas pueden ser opcionales según tu caso.
+
+Ejecutá el script con la base correcta seleccionada. Si la tabla ya existe, verás error de objeto duplicado: usá otra base de prueba o eliminá/renombrá solo en entornos de estudio.
+
+---
+
+## SELECT: leer datos de una tabla
+
+Para traer **todas** las columnas de **todas** las filas:
+
+```sql
+SELECT * FROM Clientes;
+```
+
+El asterisco (`*`) equivale a “todas las columnas”. Si solo necesitás algunas:
+
+```sql
+SELECT IDCliente, Nombre, Email FROM Clientes;
+```
+
+Esto es la base del **Read** del CRUD: consultar lo que ya guardaste.
+
+---
+
+## INSERT INTO: cargar datos (Create sobre filas)
+
+Un insert básico indica tabla, columnas y valores:
+
+```sql
+INSERT INTO Clientes (Nombre, Email, Celular, ActivoSN)
+VALUES ('José', 'jos@gmail.com', 9655, 'S');
+```
+
+Detalles importantes:
+
+- Si **`IDCliente`** tiene `IDENTITY`, no hace falta incluirlo en el `INSERT`; SQL Server genera el siguiente número.
+- En SQL Server, los textos van entre **comillas simples** `'...'`, no dobles.
+- Los tipos deben coincidir: un número muy grande en `INT` puede fallar; para celulares con prefijo internacional conviene **`BIGINT`** o guardar el teléfono como `VARCHAR`.
+
+### Insertar varias filas en un solo comando
+
+```sql
+INSERT INTO Clientes (Nombre, Email, Celular, ActivoSN)
+VALUES
+  ('Lucas', 'lucas@mail.com', 99111222, 'S'),
+  ('María', 'maria@mail.com', 99222333, 'N'),
+  ('Luis', 'luis@mail.com', 99333444, 'S');
+```
+
+Después de insertar, validá con `SELECT * FROM Clientes;`.
+
+<Callout type="warning" title="Errores al insertar">
+  Si el motor dice que el valor es demasiado grande para el tipo, revisá la columna (`INT` vs `BIGINT`) o acortá el dato. Leer el mensaje de error en SSMS suele indicar exactamente qué columna corregir. Para cambiar el tipo de una columna existente existe `ALTER TABLE`, tema para una guía más avanzada.
+</Callout>
+
+---
+
+## Filtrar con WHERE (SELECT más útil)
+
+`WHERE` limita qué filas devuelve el `SELECT`:
+
+```sql
+-- Un cliente por ID
+SELECT * FROM Clientes WHERE IDCliente = 6;
+
+-- Varios registros que cumplen una condición
+SELECT * FROM Clientes WHERE IDCliente <= 10;
+
+-- Combinar condiciones
+SELECT * FROM Clientes
+WHERE IDCliente <= 10 AND ActivoSN = 'S';
+```
+
+En aplicaciones reales vas a usar `WHERE` constantemente: usuarios activos, pedidos del mes, clientes de un país, etc. Las palabras reservadas (`SELECT`, `FROM`, `WHERE`, `AND`) las resalta SSMS en azul para ayudarte a leer la consulta.
+
+---
+
+## DELETE: borrar filas con cuidado
+
+```sql
+DELETE FROM Clientes WHERE IDCliente = 8;
+```
+
+Sin `WHERE`, un `DELETE FROM Clientes` **vacía toda la tabla**. En bases sensibles la buena práctica es:
+
+1. Primero un `SELECT` con el mismo `WHERE` para ver qué vas a borrar.
+2. Después el `DELETE` con el filtro exacto (por ejemplo por `IDCliente`).
+
+El mensaje “1 fila afectada” confirma que se eliminó un registro.
+
+---
+
+## UPDATE: modificar datos existentes
+
+```sql
+UPDATE Clientes
+SET Nombre = 'Kevin'
+WHERE IDCliente = 6;
+```
+
+Sin `WHERE`, **todas** las filas quedarían con `Nombre = 'Kevin'`. Siempre acotá con el identificador único (`IDCliente`).
+
+Comprobá el cambio:
+
+```sql
+SELECT * FROM Clientes WHERE IDCliente = 6;
+```
+
+---
+
+## Resumen: tu primer CRUD en SQL Server
+
+Con lo visto en esta guía ya podés:
+
+1. **Crear** base de datos (`CREATE DATABASE`) y tabla (`CREATE TABLE`).
+2. **Insertar** filas (`INSERT INTO`).
+3. **Consultar** y filtrar (`SELECT`, `WHERE`).
+4. **Actualizar** (`UPDATE` + `WHERE`).
+5. **Eliminar** (`DELETE` + `WHERE`).
+
+Eso es el núcleo con el que conviene **empezar cualquier camino en SQL**. Lo siguiente en la serie suele ser relacionar tablas con **claves foráneas** (`FOREIGN KEY`) y consultas entre varias entidades; pero sin dominar este CRUD, el resto se complica innecesariamente.
+
+<Callout type="tip" title="Práctica recomendada">
+  Armá una hoja de referencia con estos cinco bloques: `CREATE DATABASE`, `CREATE TABLE`, `INSERT`, `SELECT`/`WHERE`, `UPDATE`, `DELETE`. Repetí los ejemplos cambiando nombres de base, columnas y datos. Con el tiempo la sintaxis sale sola; lo que no se reemplaza es la práctica repetida.
+</Callout>
+
+---
+
+## Próximos pasos
+
+- Repetí todos los comandos en una base de prueba propia (`EmpresaPlus` o el nombre que prefieras).
+- Si aún no tenés el entorno, completá la [instalación de SQL Server y SSMS](/sql/instalando-sql-server-management-2026).
+- En el canal seguimos con SQL más avanzado: relaciones entre tablas, claves foráneas y consultas que unen varias tablas.
