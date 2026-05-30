@@ -1,0 +1,31 @@
+---
+import { home } from '../../config/home';
+import SectionHeading from './SectionHeading.astro';
+
+const { testimonials } = home;
+---
+
+<section class="home-section testimonials-section" aria-labelledby="testimonials-title">
+  <div class="container">
+    <SectionHeading
+      title={testimonials.title}
+      description={testimonials.description}
+      id="testimonials-title"
+      centered
+    />
+
+    <ul class="testimonials-grid">
+      {testimonials.items.map((item) => (
+        <li class="testimonial-card">
+          <div class="testimonial-stars" aria-label={`${item.rating} de 5 estrellas`}>
+            {'★'.repeat(item.rating)}
+          </div>
+          <blockquote>
+            <p>“{item.quote}”</p>
+          </blockquote>
+          <footer>— {item.author}</footer>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

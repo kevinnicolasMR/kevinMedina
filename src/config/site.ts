@@ -12,30 +12,50 @@ export const site = {
   locale: 'es_ES',
   author: {
     name: 'Kevin Medina',
-    url: 'https://www.youtube.com/@kevinmedinarobles', // TODO: verificar URL oficial del canal
+    url: 'https://www.youtube.com/@kevinmedinarobles',
   },
   developer: {
     name: 'Kevin Medina',
-    role: 'Backend Developer & Analista en It',
-    image: '/images/developer.png', // TODO: reemplazar por tu foto real (ej. /images/developer.jpg)
+    role: 'Backend Developer & Analista en IT',
+    image: '/images/developer.png',
     imageAlt: 'Kevin Medina, desarrollador de software',
     headline: 'Kevin Medina',
     bio: [
-      'Programador con 5 años de experiencia, programando para empresas a nivel internacional desde Uruguay. Actualmente programador fullstack y estudiante de Analista en It.',
-      'En este sitio encontraras tutoriales de programacion en español de Java, SQL entre otras tecnologias.',
+      'Programador con 5 años de experiencia, programando para empresas a nivel internacional desde Uruguay. Actualmente programador fullstack y estudiante de Analista en IT.',
+      'En este sitio encontrarás tutoriales de programación en español de Java, SQL y otras tecnologías que uso en proyectos reales.',
     ],
     ctaLabel: 'Tutoriales',
-    ctaHref: '#tutoriales',
+    ctaHref: '#youtube',
   },
   youtube: {
-    channelUrl: 'https://www.youtube.com/@kevinmedinarobles', 
+    channelUrl: 'https://www.youtube.com/@kevinmedinarobles',
     channelName: 'Kevin Medina',
   },
+  social: [
+    {
+      label: 'YouTube',
+      href: 'https://www.youtube.com/@kevinmedinarobles',
+    },
+    {
+      label: 'LinkedIn',
+      href: 'https://www.linkedin.com/in/kevinnicolasmr/', // TODO: URL real de LinkedIn
+    },
+  ],
   defaultOgImage: '/og-default.png',
   navigation: [
     { label: 'Inicio', href: '/' },
-    { label: 'SQL', href: '/sql' },
+    { label: 'YouTube', href: 'https://www.youtube.com/@kevinmedinarobles', external: true },
+    { label: 'Blog', href: '/#blog' },
+    { label: 'Contacto', href: '/#contacto' },
   ],
+  footer: {
+    newsletterNote: 'Recibe novedades sobre tutoriales y artículos nuevos.',
+    legal: [
+      { label: 'Política de privacidad', href: '/#contacto' }, // TODO: página legal
+      { label: 'Términos', href: '/#contacto' }, // TODO: página legal
+      { label: 'Sitemap', href: '/sitemap-index.xml' },
+    ],
+  },
 } as const;
 
 export type SiteConfig = typeof site;

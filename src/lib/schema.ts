@@ -119,6 +119,19 @@ export function buildVideoObjectSchemaFromEmbed(
   };
 }
 
+export function buildPersonSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: site.author.name,
+    url: site.url,
+    image: absoluteUrl(site.developer.image),
+    jobTitle: site.developer.role,
+    description: site.description,
+    sameAs: site.social.map((link) => link.href),
+  };
+}
+
 export function buildArticleBreadcrumbs(article: ArticleLike): BreadcrumbItem[] {
   const pillar = article.data.pillar;
   const pillarLabel = pillar.toUpperCase();

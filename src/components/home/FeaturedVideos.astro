@@ -1,0 +1,55 @@
+---
+import type { ArticleEntry } from '../../lib/articles';
+import { getArticleThumbnail, getArticleUrl } from '../../lib/articles';
+import { home } from '../../config/home';
+import SectionHeading from './SectionHeading.astro';
+
+interface Props {
+  articles: ArticleEntry[];
+}
+
+const { articles } = Astro.props;
+const { videos } = home;
+const featured = articles.slice(0, videos.limit);
+---
+
+<section class="home-section featured-videos" id={videos.id} aria-labelledby="videos-title">
+  <div class="container">
+    <SectionHeading
+      title={videos.title}
+      description={videos.description}
+      id="videos-title"
+      centered
+    />
+
+    {featured.length > 0 ? (
+      <ul class="featured-videos-grid">
+        {featured.map((article) => (
+          <li>
+            <a class="featured-video-card" href={getArticleUrl(article)}>
+              <span class="featured-video-thumb">
+                <img
+                  src={getArticleThumbnail(article)}
+                  alt={`Miniatura: ${article.data.title}`}
+                  width="480"
+                  height="270"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="featured-video-play" aria-hidden="true">▶</span>
+              </span>
+              <span class="featured-video-body">
+                <span class="featured-video-title">{article.data.title}</span>
+                <span class="featured-video-meta">
+                  {article.data.pillar.toUpperCase()} · Guía escrita
+                </span>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="home-empty">Próximamente publicaré más tutoriales en video.</p>
+    )}
+  </div>
+</section>

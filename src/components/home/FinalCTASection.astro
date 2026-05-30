@@ -1,0 +1,28 @@
+---
+import { home } from '../../config/home';
+import SectionHeading from './SectionHeading.astro';
+
+const { finalCta } = home;
+---
+
+<section class="home-section final-cta-section" id={finalCta.id} aria-labelledby="final-cta-title">
+  <div class="container">
+    <SectionHeading title={finalCta.title} id="final-cta-title" centered />
+
+    <ul class="final-cta-grid">
+      {finalCta.items.map((item) => (
+        <li>
+          <a
+            class:list={['final-cta-card', item.variant === 'primary' && 'final-cta-card-primary']}
+            href={item.href}
+            {...(item.external ? { rel: 'noopener noreferrer', target: '_blank' } : {})}
+          >
+            <span class="final-cta-icon" aria-hidden="true">{item.icon}</span>
+            <h3>{item.title}</h3>
+            <p>{item.description}</p>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

@@ -1,0 +1,36 @@
+---
+import { home } from '../../config/home';
+import SectionHeading from './SectionHeading.astro';
+
+const { experience } = home;
+---
+
+<section class="home-section experience-section" id={experience.id} aria-labelledby="experience-title">
+  <div class="container">
+    <SectionHeading
+      title={experience.title}
+      description={experience.description}
+      id="experience-title"
+      centered
+    />
+
+    <ol class="experience-timeline">
+      {experience.timeline.map((item) => (
+        <li class="experience-item">
+          <span class="experience-period">{item.period}</span>
+          <h3>{item.role}</h3>
+          <p>{item.company}</p>
+        </li>
+      ))}
+    </ol>
+
+    <div class="experience-tech">
+      <h3 class="experience-tech-title">Tecnologías dominadas</h3>
+      <ul class="tech-tags">
+        {experience.technologies.map((tech) => (
+          <li>{tech}</li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
