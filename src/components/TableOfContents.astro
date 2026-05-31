@@ -13,9 +13,9 @@ const tocHeadings = headings.filter(
 ---
 
 {tocHeadings.length > 0 && (
-  <aside class="toc" aria-label="Tabla de contenidos">
-    <h2 class="toc-title">En este artículo</h2>
-    <nav>
+  <details class="toc toc-details">
+    <summary class="toc-title">En este artículo</summary>
+    <nav aria-label="Tabla de contenidos">
       <ol>
         {tocHeadings.map((heading) => (
           <li class={`toc-depth-${heading.depth}`}>
@@ -24,5 +24,28 @@ const tocHeadings = headings.filter(
         ))}
       </ol>
     </nav>
-  </aside>
+  </details>
 )}
+
+<script>
+  function syncTocDetails() {
+    const toc = document.querySelector('.toc-details');
+    if (!toc) return;
+
+    const mq = window.matchMedia('(min-width: 64rem)');
+
+    function apply() {
+      if (mq.matches) {
+        toc.setAttribute('open', '');
+      } else {
+        toc.removeAttribute('open');
+      }
+    }
+
+    apply();
+    mq.addEventListener('change', apply);
+  }
+
+  syncTocDetails();
+  document.addEventListener('astro:page-load', syncTocDetails);
+</script>

@@ -13,7 +13,18 @@ function isActive(href: string): boolean {
 <header class="site-header">
   <div class="container header-inner">
     <a class="logo" href="/">{site.name}</a>
-    <nav aria-label="Principal">
+
+    <button
+      type="button"
+      class="nav-toggle"
+      aria-expanded="false"
+      aria-controls="site-nav"
+      aria-label="Abrir menú de navegación"
+    >
+      <span class="nav-toggle-icon" aria-hidden="true"></span>
+    </button>
+
+    <nav id="site-nav" class="site-nav" aria-label="Principal">
       <ul class="nav-list">
         {site.navigation.map((item) => (
           <li>
@@ -32,3 +43,50 @@ function isActive(href: string): boolean {
     </nav>
   </div>
 </header>
+
+<script>
+  function initMobileNav() {
+    const header = document.querySelector('.site-header');
+    const toggle = document.querySelector('.nav-toggle');
+    const nav = document.querySelector('.site-nav');
+    if (!header || !toggle || !nav) return;
+
+    const mq = window.matchMedia('(min-width: 48rem)');
+
+    function setOpen(open: boolean) {
+      if (!header) return;
+      header.classList.toggle('nav-is-open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute(
+        'aria-label',
+        open ? 'Cerrar menú de navegación' : 'Abrir menú de navegación',
+      );
+      document.body.classList.toggle('nav-menu-open', open);
+    }
+
+    function closeMenu() {
+      setOpen(false);
+    }
+
+    toggle.addEventListener('click', () => {
+      setOpen(!header.classList.contains('nav-is-open'));
+    });
+
+    nav.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        if (!mq.matches) closeMenu();
+      });
+    });
+
+    mq.addEventListener('change', (e) => {
+      if (e.matches) closeMenu();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeMenu();
+    });
+  }
+
+  initMobileNav();
+  document.addEventListener('astro:page-load', initMobileNav);
+</script>

@@ -25,8 +25,8 @@ const embedTitle = `Video: ${title}`;
       <img
         src={thumbnailUrl}
         alt={`Miniatura del video ${title}`}
-        width="1280"
-        height="720"
+        width="480"
+        height="270"
         loading="lazy"
         decoding="async"
       />
@@ -71,8 +71,6 @@ const embedTitle = `Video: ${title}`;
       const iframe = document.createElement('iframe');
       iframe.src = `${embedUrl}?autoplay=1`;
       iframe.title = embedTitle;
-      iframe.width = '560';
-      iframe.height = '315';
       iframe.loading = 'lazy';
       iframe.allow =
         'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
