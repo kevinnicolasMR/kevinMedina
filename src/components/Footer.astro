@@ -50,7 +50,7 @@ const year = new Date().getFullYear();
         ))}
       </ul>
 
-      <p class="footer-newsletter-label">{site.footer.newsletterNote}</p>
+      <!-- <p class="footer-newsletter-label">{site.footer.newsletterNote}</p>
       <form class="footer-newsletter" action="#" method="post">
         <label class="sr-only" for="newsletter-email">Correo electrónico</label>
         <input
@@ -62,18 +62,18 @@ const year = new Date().getFullYear();
           disabled
         />
         <button type="button" disabled>Próximamente</button>
-      </form>
+      </form> -->
     </div>
   </div>
 
   <div class="container footer-bottom">
     <p>© {year} {site.author.name}. Todos los derechos reservados.</p>
-    <ul class="footer-legal">
+    <!-- <ul class="footer-legal">
       {site.footer.legal.map((item) => (
         <li>
           <a href={item.href}>{item.label}</a>
         </li>
       ))}
-    </ul>
+    </ul> -->
   </div>
 </footer>
