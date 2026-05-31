@@ -45,8 +45,7 @@ export const site = {
   navigation: [
     { label: 'Inicio', href: '/' },
     { label: 'YouTube', href: 'https://www.youtube.com/@kevinmedinarobles', external: true },
-    { label: 'Blog', href: '/#blog' },
-    { label: 'Contacto', href: '/#contacto' },
+    { label: 'Contacto', href: 'https://www.linkedin.com/in/kevinnicolasmr/' },
   ],
   footer: {
     newsletterNote: 'Recibe novedades sobre tutoriales y artículos nuevos.',
