@@ -3,7 +3,7 @@
  * Actualiza `url` antes de desplegar a producción.
  */
 export const site = {
-  name: 'Kevin Medina Dev',
+  name: 'Kevin Medina',
   title: 'Kevin Medina Dev — Programación y SQL',
   description:
     'Tutoriales de programación y SQL en español. Aprende con artículos claros y videos en YouTube.',
