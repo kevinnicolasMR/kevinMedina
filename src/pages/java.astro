@@ -1,0 +1,50 @@
+---
+import PillarLayout from '../layouts/PillarLayout.astro';
+import { getArticlesByPillar, getArticleUrl } from '../lib/articles';
+
+const pillar = 'java';
+const articles = await getArticlesByPillar(pillar);
+
+const title = 'Aprender Java con ejercicios prácticos';
+const description =
+  'Guías y ejercicios resueltos en Java: lógica, NetBeans, Maven, buenas prácticas y problemas reales para juniors y quienes están aprendiendo desarrollo.';
+const keywords = [
+  'aprender Java',
+  'tutorial Java NetBeans',
+  'ejercicios Java',
+  'Java para principiantes',
+  'Maven Java',
+  'validar contraseña Java',
+];
+
+const breadcrumbs = [
+  { label: 'Inicio', href: '/' },
+  { label: 'Java', href: '/java' },
+];
+---
+
+<PillarLayout
+  title={title}
+  description={description}
+  canonical="/java"
+  keywords={keywords}
+  breadcrumbs={breadcrumbs}
+>
+  <section class="pillar-topics" aria-labelledby="java-articles-title">
+    <h2 id="java-articles-title">Artículos de Java</h2>
+    {articles.length > 0 ? (
+      <ul class="article-list">
+        {articles.map((article) => (
+          <li>
+            <a href={getArticleUrl(article)}>
+              <span class="related-title">{article.data.title}</span>
+              <span class="related-description">{article.data.description}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p>Próximamente publicaremos más tutoriales y ejercicios de Java.</p>
+    )}
+  </section>
+</PillarLayout>

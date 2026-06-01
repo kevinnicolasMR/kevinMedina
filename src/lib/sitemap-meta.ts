@@ -41,14 +41,24 @@ export function buildSitemapMetaByPath(
     priority: 0.9,
   });
 
-  let latestArticleMod = new Date(0);
+  meta.set('/java/', {
+    lastmod: new Date().toISOString(),
+    changefreq: 'weekly',
+    priority: 0.9,
+  });
+
+  const pillarLatestMod = new Map<string, Date>();
 
   for (const article of articles) {
     const path = normalizeSitemapPath(article.path);
     const modified = new Date(article.lastmod);
+    const pillar = path.split('/').filter(Boolean)[0];
 
-    if (modified > latestArticleMod) {
-      latestArticleMod = modified;
+    if (pillar) {
+      const current = pillarLatestMod.get(pillar);
+      if (!current || modified > current) {
+        pillarLatestMod.set(pillar, modified);
+      }
     }
 
     meta.set(path, {
@@ -58,15 +68,9 @@ export function buildSitemapMetaByPath(
     });
   }
 
-  if (latestArticleMod.getTime() > 0) {
-    const pillarLastmod = latestArticleMod.toISOString();
-    meta.set('/sql/', {
-      lastmod: pillarLastmod,
-      changefreq: 'weekly',
-      priority: 0.9,
-    });
-    meta.set('/carrera/', {
-      lastmod: pillarLastmod,
+  for (const [pillar, modified] of pillarLatestMod) {
+    meta.set(`/${pillar}/`, {
+      lastmod: modified.toISOString(),
       changefreq: 'weekly',
       priority: 0.9,
     });
