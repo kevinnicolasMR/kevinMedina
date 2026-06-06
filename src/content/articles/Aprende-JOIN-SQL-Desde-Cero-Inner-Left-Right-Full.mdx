@@ -1,0 +1,263 @@
+---
+title: 'Aprende JOIN en SQL desde cero: INNER, LEFT, RIGHT y FULL JOIN'
+description: 'Tutorial práctico de JOIN en SQL Server: relacionar tablas CLIENTES y PRODUCTOS_ADQUIRIDOS, INNER JOIN, FULL JOIN, LEFT JOIN, RIGHT JOIN y filtros con WHERE.'
+pillar: sql
+slug: aprende-join-sql-desde-cero-inner-left-right-full
+publishedDate: 2026-06-01
+keywords:
+  - JOIN SQL Server
+  - INNER JOIN SQL
+  - LEFT JOIN RIGHT JOIN
+  - FULL JOIN SQL
+  - aprender SQL JOIN
+  - tutorial SQL SSMS
+  - primary key foreign key SQL
+youtubeVideoId: TuPh5p2Ax50
+relatedSlugs:
+  - si-quieres-aprender-sql-empieza-por-esto-crud-completo
+  - instalando-sql-server-management-2026
+---
+
+import Callout from '../../components/Callout.astro';
+import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
+
+<YouTubeEmbed
+  videoId="TuPh5p2Ax50"
+  title="Aprende JOIN en SQL desde cero (INNER, LEFT, RIGHT, FULL)"
+  caption="Video: JOIN en SQL Server — clientes, ventas, informes y tipos de JOIN"
+/>
+
+<Callout type="info" title="Requisito previo">
+  Este tutorial asume que ya tenés **SQL Server** y **SSMS** instalados y que manejás lo básico del **CRUD** (CREATE, INSERT, SELECT). Si no, empezá por [instalar SSMS y SQL Server](/sql/instalando-sql-server-management-2026) y por la guía de [CRUD completo](/sql/si-quieres-aprender-sql-empieza-por-esto-crud-completo).
+</Callout>
+
+## Aprende JOIN en SQL: el siguiente paso después del CRUD
+
+Si ya sabés crear tablas, insertar datos y consultar con `SELECT`, el siguiente paso natural en SQL es el **JOIN**: unir filas de **dos o más tablas** para armar informes que en el trabajo vas a usar todo el tiempo.
+
+En este tutorial usamos un caso real:
+
+- Tabla **CLIENTES** (Ana, Luis, María, Carlos…)
+- Tabla **PRODUCTOS_ADQUIRIDOS** (qué compró cada cliente)
+
+El objetivo: responder preguntas como *“¿cuántas ventas tuvo Ana?”* o *“¿qué clientes no compraron nada?”* — eso se resuelve con JOIN.
+
+---
+
+## ¿Por qué usamos JOIN en SQL?
+
+Imaginá dos tablas separadas:
+
+| Tabla | Qué guarda |
+|-------|------------|
+| `CLIENTES` | Datos del cliente (nombre, email, ciudad…) |
+| `PRODUCTOS_ADQUIRIDOS` | Ventas (producto, precio, fecha…) |
+
+Cada cliente tiene un **ID_CLIENTE** único (`PRIMARY KEY`). En ventas, ese mismo **ID_CLIENTE** repite la referencia: si Ana es `1`, sus compras también tienen `ID_CLIENTE = 1`.
+
+**JOIN** no crea una tabla permanente en disco: arma un **resultado temporal** que “matchea” filas de ambas tablas según una condición (normalmente igualdad de IDs).
+
+Sin JOIN tendrías que cruzar datos a mano. Con JOIN, un solo `SELECT` te da el informe.
+
+---
+
+## Script completo: tablas y datos de ejemplo
+
+Copiá y ejecutá este script en SSMS (ajustá la base de datos activa antes). Elimina tablas previas si las tenés de pruebas anteriores:
+
+```sql
+-- Primero eliminamos las tablas si ya existen
+DROP TABLE IF EXISTS PRODUCTOS_ADQUIRIDOS;
+DROP TABLE IF EXISTS CLIENTES;
+
+-- Creamos nuestras tablas
+CREATE TABLE CLIENTES (
+    ID_CLIENTE INT PRIMARY KEY,
+    NOMBRE VARCHAR(100),
+    APELLIDO VARCHAR(100),
+    EMAIL VARCHAR(200),
+    CIUDAD VARCHAR(100)
+);
+
+CREATE TABLE PRODUCTOS_ADQUIRIDOS (
+    ID_PRODUCTO INT PRIMARY KEY,
+    ID_CLIENTE INT,
+    NOMBRE_PRODUCTO VARCHAR(150) NOT NULL,
+    PRECIO DECIMAL(10, 2) NOT NULL,
+    FECHA_COMPRA DATE NOT NULL
+);
+
+-- Insertamos clientes
+INSERT INTO CLIENTES (ID_CLIENTE, NOMBRE, APELLIDO, EMAIL, CIUDAD)
+VALUES
+(1, 'Ana', 'Gomez', 'ana@gmail.com', 'Montevideo'),
+(2, 'Luis', 'Perez', 'luis@gmail.com', 'Canelones'),
+(3, 'Maria', 'Rodriguez', 'maria@gmail.com', 'Maldonado'),
+(4, 'Pedro', 'Fernandez', 'pedro@gmail.com', 'Colonia'),
+(5, 'Sofia', 'Martinez', 'sofia@gmail.com', 'Salto'),
+(6, 'Carlos', 'Silva', 'carlos@gmail.com', 'Rivera');
+
+-- Insertamos productos adquiridos
+INSERT INTO PRODUCTOS_ADQUIRIDOS
+(ID_PRODUCTO, ID_CLIENTE, NOMBRE_PRODUCTO, PRECIO, FECHA_COMPRA)
+VALUES
+(101, 1, 'Teclado Mecánico', 2500, '2026-06-01'),
+(102, 1, 'Mouse Gamer', 1200, '2026-06-01'),
+(103, 2, 'Monitor 24"', 8500, '2026-06-02'),
+(104, 2, 'Auriculares', 1800, '2026-06-03'),
+(105, 3, 'Notebook Lenovo', 25000, '2026-06-01'),
+(106, 3, 'Mouse Inalámbrico', 900, '2026-06-02'),
+(107, 4, 'Webcam HD', 1500, '2026-06-04'),
+(108, 4, 'Micrófono USB', 2200, '2026-06-05'),
+(109, 5, 'SSD 1TB', 4200, '2026-06-01'),
+(110, 5, 'Memoria RAM 16GB', 3100, '2026-06-02'),
+-- Producto con ID_CLIENTE que no existe en CLIENTES (cliente huérfano en ventas)
+(111, 99, 'Producto sin cliente válido', 999, '2026-06-03');
+```
+
+Comprobación rápida:
+
+```sql
+SELECT * FROM CLIENTES;
+SELECT * FROM PRODUCTOS_ADQUIRIDOS;
+```
+
+---
+
+## Tu primer JOIN (INNER JOIN)
+
+Solo clientes:
+
+```sql
+SELECT * FROM CLIENTES;
+```
+
+Para ver **clientes y sus compras** en la misma fila:
+
+```sql
+SELECT *
+FROM CLIENTES C
+JOIN PRODUCTOS_ADQUIRIDOS PA
+  ON C.ID_CLIENTE = PA.ID_CLIENTE;
+```
+
+Conceptos clave:
+
+- **`JOIN`** (en SQL Server suele ser **INNER JOIN** aunque no escribas `INNER`).
+- **`ON`**: condición de unión. Acá: mismo `ID_CLIENTE` en ambas tablas.
+- **Alias** (`C`, `PA`): acortan la consulta y la hacen legible.
+
+Si ejecutás el JOIN **sin** `ON`, SSMS devuelve error: hace falta decir **cómo** emparejar las tablas.
+
+### Filtrar un cliente con WHERE
+
+Ventas solo de Ana (`ID_CLIENTE = 1`):
+
+```sql
+SELECT *
+FROM CLIENTES C
+JOIN PRODUCTOS_ADQUIRIDOS PA
+  ON C.ID_CLIENTE = PA.ID_CLIENTE
+WHERE C.ID_CLIENTE = 1;
+```
+
+---
+
+## ¿Qué pasa con Carlos? (cliente sin ventas)
+
+**Carlos** (`ID_CLIENTE = 6`) está en `CLIENTES` pero **no tiene compras**. Con un **INNER JOIN** no aparece: solo se muestran filas que **matchean en ambas tablas**.
+
+Ahí entran los otros tipos de JOIN.
+
+---
+
+## FULL JOIN: todo, aunque no haya match
+
+```sql
+SELECT *
+FROM CLIENTES C
+FULL JOIN PRODUCTOS_ADQUIRIDOS PA
+  ON C.ID_CLIENTE = PA.ID_CLIENTE;
+```
+
+**FULL JOIN** muestra:
+
+- Clientes **con** ventas (datos de ambos lados)
+- Clientes **sin** ventas → columnas de productos en **NULL**
+- Ventas **sin** cliente válido (ej. `ID_CLIENTE = 99`) → columnas de cliente en **NULL**
+
+`NULL` significa: *“no hay dato en este lado de la unión”*.
+
+<Callout type="tip" title="INNER vs FULL en SSMS">
+  En Microsoft SQL Server, `JOIN` a secas funciona como **INNER JOIN**. Para ver clientes o ventas “huérfanas”, necesitás **FULL**, **LEFT** o **RIGHT** según el informe que te pidan.
+</Callout>
+
+---
+
+## LEFT JOIN y RIGHT JOIN
+
+Comparación práctica con el mismo `ON`:
+
+```sql
+-- INNER: solo matches
+SELECT *
+FROM CLIENTES C
+JOIN PRODUCTOS_ADQUIRIDOS PA ON C.ID_CLIENTE = PA.ID_CLIENTE;
+
+-- FULL: ambos lados, con NULL donde falta match
+SELECT *
+FROM CLIENTES C
+FULL JOIN PRODUCTOS_ADQUIRIDOS PA ON C.ID_CLIENTE = PA.ID_CLIENTE;
+
+-- LEFT: toda la tabla izquierda (CLIENTES) + ventas si existen
+SELECT *
+FROM CLIENTES C
+LEFT JOIN PRODUCTOS_ADQUIRIDOS PA ON C.ID_CLIENTE = PA.ID_CLIENTE;
+
+-- RIGHT: toda la tabla derecha (PRODUCTOS) + cliente si existe
+SELECT *
+FROM CLIENTES C
+RIGHT JOIN PRODUCTOS_ADQUIRIDOS PA ON C.ID_CLIENTE = PA.ID_CLIENTE;
+```
+
+| Tipo | Qué prioriza | Ejemplo en nuestro caso |
+|------|----------------|-------------------------|
+| **INNER JOIN** | Solo filas que coinciden | Ana + sus 2 productos; **no** Carlos |
+| **LEFT JOIN** | Tabla izquierda (`CLIENTES`) | Carlos aparece con NULL en productos |
+| **RIGHT JOIN** | Tabla derecha (`PRODUCTOS_ADQUIRIDOS`) | Venta con `ID_CLIENTE = 99` sin datos de cliente |
+| **FULL JOIN** | Ambas tablas completas | Carlos NULL + venta 99 NULL + todos los matches |
+
+---
+
+## JOIN + WHERE (informes dinámicos)
+
+En producción casi siempre sumás filtros:
+
+```sql
+SELECT *
+FROM CLIENTES C
+JOIN PRODUCTOS_ADQUIRIDOS PA
+  ON C.ID_CLIENTE = PA.ID_CLIENTE
+WHERE C.ID_CLIENTE <= 3;
+```
+
+Podés usar `=`, `<=`, rangos de fechas, ciudad, etc. El JOIN arma la base; el `WHERE` acota el informe.
+
+---
+
+## Resumen: cuándo usar cada JOIN
+
+1. **INNER JOIN** → “Solo clientes que **sí** compraron” o ventas con cliente válido emparejado.
+2. **LEFT JOIN** → “Todos los clientes y, si compraron, sus productos” (ideal para ver quién **nunca** compró).
+3. **RIGHT JOIN** → “Todas las ventas y, si hay cliente, sus datos”.
+4. **FULL JOIN** → “Quiero ver **todo**: matches, clientes sin venta y ventas sin cliente”.
+
+En el día a día, **INNER** y **LEFT** son los más usados para reportes. **FULL** ayuda a auditar datos inconsistentes (como el `ID_CLIENTE = 99`).
+
+---
+
+## Próximos pasos
+
+- Ejecutá los cuatro JOIN sobre el script de arriba y compará fila por fila con las tablas sueltas.
+- Repasá el [CRUD en SQL Server](/sql/si-quieres-aprender-sql-empieza-por-esto-crud-completo) si necesitás refrescar CREATE, INSERT y SELECT.
+- Mirá el tutorial completo en [YouTube](https://www.youtube.com/watch?v=TuPh5p2Ax50).
