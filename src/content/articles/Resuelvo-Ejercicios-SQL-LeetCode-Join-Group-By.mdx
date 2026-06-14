@@ -1,0 +1,241 @@
+---
+title: 'Resuelvo 3 ejercicios de SQL en LeetCode: JOIN, self JOIN y GROUP BY'
+description: 'Soluciones paso a paso en LeetCode SQL: combinar Person y Address con LEFT JOIN, empleados que ganan más que su manager y emails duplicados con HAVING.'
+pillar: sql
+slug: resuelvo-ejercicios-sql-leetcode-join-group-by
+publishedDate: 2026-06-01
+keywords:
+  - ejercicios SQL LeetCode
+  - LeetCode SQL soluciones
+  - LEFT JOIN LeetCode
+  - self JOIN SQL
+  - GROUP BY HAVING SQL
+  - emails duplicados SQL
+  - practicar SQL entrevistas
+youtubeVideoId: X82HqALOEGo
+relatedSlugs:
+  - aprende-join-sql-desde-cero-inner-left-right-full
+  - si-quieres-aprender-sql-empieza-por-esto-crud-completo
+---
+
+import Callout from '../../components/Callout.astro';
+import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
+
+<YouTubeEmbed
+  videoId="X82HqALOEGo"
+  title="Resuelvo 3 ejercicios de SQL en LeetCode"
+  caption="Video: Person + Address, empleados vs managers y emails duplicados — lógica paso a paso"
+/>
+
+<Callout type="info" title="Antes de empezar">
+  LeetCode suele estar en **inglés** (podés traducir la página si te ayuda). Estos ejercicios asumen tablas con `PRIMARY KEY` y relaciones por `PersonId`. Si JOIN te suena nuevo, mirá primero la guía de [JOIN en SQL](/sql/aprende-join-sql-desde-cero-inner-left-right-full).
+</Callout>
+
+<Callout type="tip" title="Cómo aprender de verdad">
+  No hace falta escribir la solución perfecta de una. Construila **paso a paso**: probá `SELECT *`, agregá el JOIN, ajustá columnas, cambiá a `LEFT JOIN`, sumá `WHERE` o `HAVING`. Así se aprende en facultad, en LeetCode y en el trabajo.
+</Callout>
+
+## Resuelvo 3 ejercicios de SQL en LeetCode
+
+En este tutorial resolvemos **tres problemas clásicos** de SQL en [LeetCode](https://leetcode.com/): uno con **JOIN** entre dos tablas, otro con **self JOIN** (misma tabla dos veces) y uno con **GROUP BY + HAVING** para duplicados. La idea es que veas **cómo armar la lógica** cuando te plantean algo similar en entrevistas o en el día a día.
+
+---
+
+## Ejercicio 1: Person y Address (LEFT JOIN)
+
+### Enunciado
+
+Reportar **first name**, **last name**, **city** y **state** de cada persona. Si una persona **no tiene dirección**, igual debe aparecer con `NULL` en city/state.
+
+### Tablas
+
+| Tabla | Rol |
+|-------|-----|
+| `Person` | Personas (`PersonId`, `FirstName`, `LastName`) |
+| `Address` | Direcciones (`AddressId`, `PersonId`, `City`, `State`) |
+
+La relación es `Person.PersonId` = `Address.PersonId`.
+
+### Paso 1: JOIN básico (incompleto)
+
+```sql
+SELECT *
+FROM Person P
+JOIN Address A
+  ON P.PersonId = A.PersonId;
+```
+
+Esto **une** filas que existen en ambas tablas, pero:
+
+- Devuelve **demasiadas columnas** (`PersonId`, `AddressId`…).
+- Con `INNER JOIN` **no aparecen** personas sin dirección (ej. Allen con NULL).
+
+### Paso 2: Elegir solo las columnas pedidas
+
+```sql
+SELECT
+  P.FirstName,
+  P.LastName,
+  A.City,
+  A.State
+FROM Person P
+JOIN Address A
+  ON P.PersonId = A.PersonId;
+```
+
+Sigue faltando a quien no tiene address.
+
+### Solución: LEFT JOIN
+
+```sql
+SELECT
+  P.FirstName,
+  P.LastName,
+  A.City,
+  A.State
+FROM Person P
+LEFT JOIN Address A
+  ON P.PersonId = A.PersonId;
+```
+
+**LEFT JOIN** trae **toda** la tabla izquierda (`Person`) y, si no hay match en `Address`, rellena con **NULL** — exactamente lo que pide el enunciado.
+
+---
+
+## Ejercicio 2: Empleados que ganan más que su manager
+
+### Enunciado
+
+Título típico en LeetCode: *Employees Earning More Than Their Managers*.
+
+Devolver **una columna** llamada `employee` con el nombre del empleado cuyo **salario es mayor** que el de su manager.
+
+### Tabla `Employee`
+
+Columnas habituales: `id`, `name`, `salary`, `managerId`.
+
+- Quienes tienen `managerId` NULL suelen ser **managers** (Sam, Max).
+- Joe y Henry son empleados con manager asignado.
+
+### Paso 1: Ver la tabla
+
+```sql
+SELECT * FROM Employee;
+```
+
+### Paso 2: Self JOIN (la misma tabla dos veces)
+
+Tratamos la tabla como **dos roles**:
+
+- **`E`** → empleado
+- **`M`** → manager
+
+```sql
+SELECT *
+FROM Employee E
+JOIN Employee M
+  ON E.managerId = M.id;
+```
+
+Esto empareja cada empleado con **su** manager (no con todos los managers del mundo).
+
+### Paso 3: Filtrar por salario
+
+```sql
+SELECT *
+FROM Employee E
+JOIN Employee M
+  ON E.managerId = M.id
+WHERE E.salary > M.salary;
+```
+
+Solo quedan empleados que **ganan más** que su jefe directo.
+
+### Solución final (columna `employee`)
+
+LeetCode pide el alias exacto **`employee`** (en MySQL/LeetCode se usa `AS`):
+
+```sql
+SELECT E.name AS employee
+FROM Employee E
+JOIN Employee M
+  ON E.managerId = M.id
+WHERE E.salary > M.salary;
+```
+
+<Callout type="warning" title="Detalle del output">
+  El enunciado pide **`name`**, no `salary`. Usá `E.name AS employee`. Un error común es devolver todas las columnas o olvidar el alias `employee`.
+</Callout>
+
+### Repaso mental
+
+1. Alias `E` y `M` sobre la **misma** tabla.
+2. `ON E.managerId = M.id` → enlazar empleado con su manager.
+3. `WHERE E.salary > M.salary` → condición de negocio.
+4. `SELECT E.name AS employee` → formato del output.
+
+---
+
+## Ejercicio 3: Emails duplicados
+
+### Enunciado
+
+*Duplicate Emails*: devolver una columna **`email`** (con alias vía `AS`) con los correos que aparecen **más de una vez** en `Person`.
+
+No hace falta JOIN: es agregación + filtro sobre grupos.
+
+### Idea
+
+1. Agrupar por `email`.
+2. Contar cuántas filas hay por email.
+3. Quedarse solo con los que tienen **count > 1**.
+
+`WHERE` no sirve después de agrupar para esto; en SQL usás **`HAVING`** (el “WHERE del GROUP BY”).
+
+### Solución
+
+```sql
+SELECT email AS email
+FROM Person
+GROUP BY email
+HAVING COUNT(*) > 1;
+```
+
+Variante equivalente mostrando el conteo (útil mientras practicás):
+
+```sql
+SELECT email, COUNT(*) AS total
+FROM Person
+GROUP BY email
+HAVING COUNT(*) > 1;
+```
+
+Para LeetCode, la primera versión alcanza: solo la columna `email` duplicada.
+
+### Por qué funciona
+
+| Paso | Qué hace |
+|------|----------|
+| `GROUP BY email` | Junta filas con el mismo correo |
+| `COUNT(*)` | Cuenta cuántas personas comparten ese email |
+| `HAVING COUNT(*) > 1` | Deja solo emails repetidos |
+
+---
+
+## Comparativa rápida de los 3 ejercicios
+
+| # | Técnica | Cuándo usarla |
+|---|---------|----------------|
+| 1 | **LEFT JOIN** | Traer filas de la tabla A aunque no existan en B |
+| 2 | **Self JOIN** + **WHERE** | Comparar filas **dentro** de la misma tabla (empleado vs manager) |
+| 3 | **GROUP BY** + **HAVING** | Detectar duplicados o agregados por grupo |
+
+---
+
+## Próximos pasos
+
+- Resolvé los tres en LeetCode y compará tu output con el esperado antes de `Submit`.
+- Repasá [JOIN desde cero](/sql/aprende-join-sql-desde-cero-inner-left-right-full) si querés afianzar INNER, LEFT y FULL.
+- Mirá el video completo en [YouTube](https://www.youtube.com/watch?v=X82HqALOEGo).
+
+Si te sirven este tipo de ejercicios, en el canal seguimos con más SQL y lógica aplicada a entrevistas y trabajo real.
