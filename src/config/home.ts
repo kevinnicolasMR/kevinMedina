@@ -36,7 +36,6 @@ export const home = {
     title: 'Videos destacados de YouTube',
     description:
       'Tutoriales prácticos grabados en español. Cada video tiene su guía escrita con pasos detallados.',
-    limit: 3,
   },
   pillars: {
     title: 'Qué vas a encontrar aquí',

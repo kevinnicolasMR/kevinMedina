@@ -10,7 +10,7 @@ interface Props {
 
 const { articles } = Astro.props;
 const { videos } = home;
-const featured = articles.slice(0, videos.limit);
+const featured = articles.filter((article) => Boolean(article.data.youtubeVideoId));
 ---
 
 <section class="home-section featured-videos" id={videos.id} aria-labelledby="videos-title">
