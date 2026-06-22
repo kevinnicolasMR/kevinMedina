@@ -1,0 +1,342 @@
+---
+title: 'Relaciones en SQL: Primary Key, Foreign Key y tipos 1:N, N:N y 1:1'
+description: 'Tutorial práctico de relaciones en SQL Server: diagrama clientes-ventas-productos, PRIMARY KEY, FOREIGN KEY, CONSTRAINT, tablas intermedias y JOIN para validar relaciones.'
+pillar: sql
+slug: relaciones-sql-primary-key-foreign-key-desde-cero
+publishedDate: 2026-06-22
+keywords:
+  - relaciones SQL Server
+  - primary key foreign key SQL
+  - relación uno a muchos SQL
+  - relación muchos a muchos SQL
+  - CONSTRAINT FOREIGN KEY SQL
+  - tutorial SQL relaciones
+  - aprender SQL relaciones
+youtubeVideoId: vaHWgJF6AkI
+relatedSlugs:
+  - si-quieres-aprender-sql-empieza-por-esto-crud-completo
+  - aprende-join-sql-desde-cero-inner-left-right-full
+  - instalando-sql-server-management-2026
+---
+
+import Callout from '../../components/Callout.astro';
+import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
+
+<YouTubeEmbed
+  videoId="vaHWgJF6AkI"
+  title="Relaciones en base de datos SQL: Primary Key y Foreign Key"
+  caption="Video: relaciones 1:N, N:N y 1:1 — diagrama, CONSTRAINT, FOREIGN KEY y JOIN en SQL Server"
+/>
+
+<Callout type="info" title="Requisito previo">
+  Este tutorial asume que ya tenés **SQL Server** y **SSMS** instalados y que manejás lo básico del **CRUD** (`CREATE TABLE`, `INSERT`, `SELECT`). Si no, empezá por [instalar SSMS y SQL Server](/sql/instalando-sql-server-management-2026) y por la guía de [CRUD completo](/sql/si-quieres-aprender-sql-empieza-por-esto-crud-completo).
+</Callout>
+
+<Callout type="tip" title="Cómo leer el diagrama">
+  Cuando el flujo de tablas se vuelve grande, un truco útil es **arrancar siempre desde el cliente** y seguir hacia afuera: qué ventas tiene, qué productos incluye cada venta y qué tablas conectan cada paso.
+</Callout>
+
+## Relaciones en SQL: el motivo de las bases de datos relacionales
+
+La mayoría de las empresas del mundo usan **bases de datos relacionales** por una razón concreta: poder **conectar información entre tablas** sin duplicar datos ni armar columnas imposibles de mantener.
+
+En el día a día vas a gestionar clientes, ventas, productos, usuarios, contraseñas y mucho más. Eso no vive en una sola tabla gigante: se organiza en **varias tablas relacionadas** mediante **Primary Key** (identificador único) y **Foreign Key** (referencia a otra tabla).
+
+En este tutorial vas a ver:
+
+1. **Teoría con diagrama**: tipos de relación (1:N, N:N, 1:1).
+2. **Código SQL**: `CONSTRAINT`, `FOREIGN KEY`, `REFERENCES` y `UNIQUE`.
+3. **Validación práctica**: diagrama en SSMS y consultas con `JOIN`.
+
+---
+
+## El problema que resolvemos: conectar clientes, ventas y productos
+
+Imaginá que **Pedro** compra una PC gamer de unos $1.000. No podés escribir en una sola tabla *“Pedro compró una computadora”* y listo: eso no escala cuando hay miles de clientes, ventas con varios ítems y productos que se repiten en distintas compras.
+
+Lo que hacés es **modelar el flujo** con tablas separadas y relaciones claras:
+
+```text
+Clientes ──(1:N)──> Ventas ──(1:N)──> DetalleVentas ──(N:1)──> Productos
+```
+
+| Tabla | Rol |
+|-------|-----|
+| `Clientes` | Quién compra (Pedro, Ana, etc.) |
+| `Ventas` | Cada compra o pedido de un cliente |
+| `DetalleVentas` | Renglones de cada venta (qué productos y cuántos) |
+| `Productos` | Catálogo (PC gamer, mouse, monitor…) |
+
+`Clientes` y `Productos` son **datos sueltos** al principio: no se relacionan entre sí directamente. Las relaciones aparecen en `Ventas` y `DetalleVentas` mediante **foreign keys**.
+
+---
+
+## Primary Key: el identificador único de cada fila
+
+Cada fila de una tabla necesita un **ID único**. Dos clientes pueden llamarse Pedro y tener datos parecidos; el email también puede ser único en negocio, pero en SQL lo habitual es una columna numérica como `IDCliente` marcada como **PRIMARY KEY**.
+
+Conceptos clave:
+
+- **Una sola PRIMARY KEY** por tabla (puede ser una o varias columnas compuestas; en este tutorial usamos una columna).
+- **No se repite** el mismo valor en filas distintas.
+- Es el **ancla** al que apuntan las foreign keys de otras tablas.
+
+Si necesitás repasar `CREATE TABLE` y `PRIMARY KEY` en profundidad, revisá la guía de [CRUD completo en SQL Server](/sql/si-quieres-aprender-sql-empieza-por-esto-crud-completo).
+
+---
+
+## Tipos de relación en SQL
+
+### Relación uno a muchos (1:N)
+
+**Un cliente puede tener muchas ventas**, pero cada venta pertenece a **un solo cliente**.
+
+- Pedro hoy compra una cosa; mañana puede comprar dos o tres más.
+- En `Ventas` vas a tener **varias filas** con el mismo `IDCliente`.
+
+La dirección del flujo es **1:N** (uno a muchos): `Clientes` → `Ventas`.
+
+### Relación uno a muchos en el detalle (venta → renglones)
+
+En una venta **no podés poner todos los productos en columnas** (`Producto1`, `Producto2`…): la tabla explota y no escala.
+
+La solución es una **tabla intermedia de detalle**:
+
+- **Una venta** puede tener **muchos renglones** en `DetalleVentas`.
+- Cada renglón apunta a **un producto** y a **una venta**.
+
+En `DetalleVentas` típicamente tenés:
+
+- `IDDetalle` → PRIMARY KEY del renglón.
+- `IDVenta` → FOREIGN KEY hacia `Ventas`.
+- `IDProducto` → FOREIGN KEY hacia `Productos`.
+
+### Relación muchos a muchos (N:N)
+
+Ocurre cuando **muchos registros de una tabla** se relacionan con **muchos de otra**. Ejemplo conceptual: muchas ventas pueden incluir muchos productos, y un mismo producto aparece en muchas ventas.
+
+En la práctica **no se modela N:N con una sola foreign key directa** entre esas dos tablas: se usa una **tabla intermedia** (`DetalleVentas` en nuestro caso) que descompone el N:N en dos relaciones 1:N.
+
+### Relación uno a uno (1:1)
+
+Ejemplo: **datos de login** del cliente (usuario/contraseña).
+
+- **Un cliente** tiene **una sola** fila de credenciales.
+- **Una fila de credenciales** pertenece a **un solo** cliente.
+
+Acá la foreign key `IDCliente` en la tabla de login suele llevar además **`UNIQUE`**, para que el mismo cliente no pueda repetirse dos veces en esa tabla.
+
+---
+
+## Foreign Key: el identificador que conecta tablas
+
+| Concepto | Función |
+|----------|---------|
+| **PRIMARY KEY** | Identifica de forma única cada fila **en su tabla**. |
+| **FOREIGN KEY** | Guarda el ID de otra tabla para **referenciar** una fila existente. |
+
+La foreign key **no es** el identificador principal de la tabla donde vive: es el **puente** hacia la primary key de otra tabla.
+
+En `DetalleVentas` podés tener **varias foreign keys**:
+
+- `IDVenta` → referencia `Ventas.IDVenta`
+- `IDProducto` → referencia `Productos.IDProducto`
+
+Y además **una primary key** propia: `IDDetalle`.
+
+<Callout type="tip" title="Nombres de CONSTRAINT">
+  En SQL Server podés nombrar cada relación con `CONSTRAINT FK_ventas_clientes` (por ejemplo). Ese nombre **no aparece como columna** en la tabla: es una regla interna que el motor usa para validar integridad referencial.
+</Callout>
+
+---
+
+## Script SQL: tablas base (Clientes y Productos)
+
+Estas tablas **no tienen foreign keys entre sí**. Son entidades independientes que otras tablas referenciarán:
+
+```sql
+CREATE TABLE Clientes (
+  IDCliente INT PRIMARY KEY IDENTITY(1, 1),
+  Nombre VARCHAR(100) NOT NULL,
+  Email VARCHAR(150) NOT NULL
+);
+
+CREATE TABLE Productos (
+  IDProducto INT PRIMARY KEY IDENTITY(1, 1),
+  Nombre VARCHAR(150) NOT NULL,
+  Precio DECIMAL(10, 2) NOT NULL
+);
+```
+
+Ejecutá cada bloque con la base de datos correcta seleccionada en SSMS.
+
+---
+
+## Relación 1:1 — Datos de login del cliente
+
+Tabla de credenciales vinculada a un único cliente:
+
+```sql
+CREATE TABLE DatosClienteLogin (
+  IDLogin INT PRIMARY KEY IDENTITY(1, 1),
+  IDCliente INT NOT NULL,
+  Usuario VARCHAR(50) NOT NULL,
+  Pass VARCHAR(255) NOT NULL,
+  CONSTRAINT FK_login_clientes
+    FOREIGN KEY (IDCliente) REFERENCES Clientes (IDCliente),
+  CONSTRAINT UQ_login_cliente_unico
+    UNIQUE (IDCliente)
+);
+```
+
+Qué hace cada parte:
+
+- **`FOREIGN KEY (IDCliente) REFERENCES Clientes (IDCliente)`** — la fila de login debe apuntar a un cliente que exista.
+- **`UNIQUE (IDCliente)`** — un cliente no puede tener dos filas de login; refuerza la relación **1:1**.
+
+---
+
+## Relación 1:N — Ventas por cliente
+
+```sql
+CREATE TABLE Ventas (
+  IDVenta INT PRIMARY KEY IDENTITY(1, 1),
+  IDCliente INT NOT NULL,
+  Fecha DATE NOT NULL,
+  Total DECIMAL(10, 2) NOT NULL,
+  CONSTRAINT FK_ventas_clientes
+    FOREIGN KEY (IDCliente) REFERENCES Clientes (IDCliente)
+);
+```
+
+Pedro (o cualquier `IDCliente`) puede aparecer en **muchas filas** de `Ventas`. No hace falta `UNIQUE` en `IDCliente` acá: eso sería 1:1, no 1:N.
+
+---
+
+## Relación 1:N + doble FK — Detalle de venta
+
+La tabla más “abstracta” del ejemplo: conecta **venta** con **producto**:
+
+```sql
+CREATE TABLE DetalleVentas (
+  IDDetalle INT PRIMARY KEY IDENTITY(1, 1),
+  IDVenta INT NOT NULL,
+  IDProducto INT NOT NULL,
+  Cantidad INT NOT NULL,
+  PrecioUnitario DECIMAL(10, 2) NOT NULL,
+  CONSTRAINT FK_detalle_ventas
+    FOREIGN KEY (IDVenta) REFERENCES Ventas (IDVenta),
+  CONSTRAINT FK_detalle_productos
+    FOREIGN KEY (IDProducto) REFERENCES Productos (IDProducto)
+);
+```
+
+- **`FK_detalle_ventas`**: cada renglón pertenece a una venta concreta.
+- **`FK_detalle_productos`**: cada renglón referencia un producto del catálogo.
+
+Con esto completás el diagrama: clientes → ventas → detalle → productos.
+
+---
+
+## Insertar datos de ejemplo
+
+Después de crear las tablas, cargá datos coherentes con las claves (mismos IDs que en el diagrama del video):
+
+```sql
+INSERT INTO Clientes (Nombre, Email)
+VALUES ('Pedro', 'pedro@mail.com');
+
+INSERT INTO Productos (Nombre, Precio)
+VALUES ('PC Gamer', 1000.00);
+
+INSERT INTO DatosClienteLogin (IDCliente, Usuario, Pass)
+VALUES (1, 'pedro', '1234');
+
+INSERT INTO Ventas (IDCliente, Fecha, Total)
+VALUES (1, '2026-06-20', 1000.00);
+
+INSERT INTO DetalleVentas (IDVenta, IDProducto, Cantidad, PrecioUnitario)
+VALUES (1, 1, 1, 1000.00);
+```
+
+Comprobación:
+
+```sql
+SELECT * FROM Clientes;
+SELECT * FROM Productos;
+SELECT * FROM Ventas;
+SELECT * FROM DetalleVentas;
+```
+
+Si insertás un `IDCliente` o `IDProducto` que **no existe**, SQL Server rechaza la fila: la foreign key protege la integridad de los datos.
+
+---
+
+## Visualizar relaciones en SSMS (Database Diagram)
+
+Para verificar que todo quedó bien sin escribir más SQL:
+
+1. Menú **View** → **Object Explorer** (si no lo tenés visible).
+2. Abrí **Database Diagrams** → **New Database Diagram**.
+3. Agregá las tablas (`Clientes`, `Productos`, `Ventas`, `DetalleVentas`, `DatosClienteLogin`).
+4. SSMS dibuja líneas entre **primary keys** y **foreign keys**.
+
+Podés mover las tablas para que el diagrama se parezca al flujo del video (cliente arriba, ventas al medio, detalle y productos abajo). Es una forma rápida de detectar relaciones mal definidas o tablas olvidadas.
+
+<Callout type="warning" title="Diagrama no carga relaciones">
+  A veces el diagrama no muestra líneas hasta que agregás las tablas manualmente. Si creaste las tablas con `FOREIGN KEY` correctas, al añadirlas al diagrama deberían aparecer las conexiones.
+</Callout>
+
+---
+
+## Probar relaciones con JOIN
+
+Con datos insertados, un **JOIN** muestra cómo las tablas “conversan” en una sola consulta.
+
+### Clientes con sus ventas
+
+```sql
+SELECT *
+FROM Clientes C
+JOIN Ventas V ON V.IDCliente = C.IDCliente;
+```
+
+Pedro debería aparecer con su venta (la de $1.000).
+
+### Ventas con renglones de detalle
+
+```sql
+SELECT *
+FROM Ventas V
+JOIN DetalleVentas D ON D.IDVenta = V.IDVenta;
+```
+
+Acá ves la venta y el renglón (PC Gamer, cantidad, precio).
+
+Para profundizar tipos de JOIN (`INNER`, `LEFT`, `FULL`), seguí con [Aprende JOIN en SQL desde cero](/sql/aprende-join-sql-desde-cero-inner-left-right-full).
+
+---
+
+## Resumen: qué aprendiste
+
+| Tema | Idea clave |
+|------|------------|
+| **1:N** | Un cliente, muchas ventas; una venta, muchos detalles |
+| **N:N** | Se resuelve con tabla intermedia (`DetalleVentas`) |
+| **1:1** | Login por cliente → `FOREIGN KEY` + `UNIQUE` en `IDCliente` |
+| **PRIMARY KEY** | ID único por fila en cada tabla |
+| **FOREIGN KEY** | Columna que referencia la PK de otra tabla |
+| **CONSTRAINT** | Nombre y regla que el motor usa para validar relaciones |
+
+Establecer relaciones bien desde el diseño evita tablas monstruo, datos inconsistentes y consultas imposibles de mantener cuando el proyecto crece.
+
+---
+
+## Próximos pasos
+
+- Repetí el script completo en una base de prueba y modificá nombres de tablas/columnas para fijar la sintaxis.
+- Abrí el diagrama en SSMS y comparalo con el flujo **Clientes → Ventas → DetalleVentas → Productos**.
+- Practicá [JOIN](/sql/aprende-join-sql-desde-cero-inner-left-right-full) uniendo las cinco tablas en distintos informes.
+- En la serie del canal seguimos vinculando esto con un **proyecto Java** (frontend + backend) que persiste clientes y ventas en la base de datos.
+
+Mirá el tutorial completo en [YouTube](https://www.youtube.com/watch?v=vaHWgJF6AkI).
