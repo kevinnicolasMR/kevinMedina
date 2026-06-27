@@ -44,6 +44,7 @@ export const site = {
   defaultOgImage: '/og-default.png',
   navigation: [
     { label: 'Inicio', href: '/' },
+    { label: 'Recursos', href: '/recursos' },
     { label: 'YouTube', href: 'https://www.youtube.com/@kevinmedinarobles', external: true },
     { label: 'Contacto', href: 'https://www.linkedin.com/in/kevinnicolasmr/' },
   ],

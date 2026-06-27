@@ -1,0 +1,618 @@
+---
+title: 'GROUP BY en SQL: formas comunes de usarlo con ejemplos claros'
+description: 'Guía práctica para estudiantes sobre GROUP BY en SQL: conteos, sumas, promedios, HAVING, varias columnas, JOIN, fechas, CASE y subtotales.'
+pillar: recursos
+slug: group-by-sql-formas-comunes-ejemplos
+publishedDate: 2026-06-27
+keywords:
+  - GROUP BY SQL
+  - ejemplos GROUP BY
+  - SQL para estudiantes
+  - HAVING SQL
+  - agregaciones SQL
+  - scripts SQL
+relatedSlugs:
+  - resuelvo-ejercicios-sql-leetcode-join-group-by
+  - si-quieres-aprender-sql-empieza-por-esto-crud-completo
+  - aprende-join-sql-desde-cero-inner-left-right-full
+---
+
+import Callout from '../../components/Callout.astro';
+
+<Callout type="info" title="Idea principal">
+  `GROUP BY` sirve para juntar filas que tienen algo en común y calcular un resultado por cada grupo: contar, sumar, promediar, buscar máximos, mínimos o detectar duplicados.
+</Callout>
+
+## GROUP BY en SQL: guía directa para estudiantes
+
+Cuando usamos `SELECT` normalmente vemos filas individuales. Con `GROUP BY` dejamos de pensar fila por fila y empezamos a pensar por **grupos**.
+
+Ejemplos típicos:
+
+- Cuántos alumnos hay por curso.
+- Cuánto se vendió por cliente.
+- Cuántas ventas hubo por día.
+- Qué emails están repetidos.
+- Promedio de notas por materia.
+
+La estructura base es esta:
+
+```sql
+SELECT columna_agrupada, FUNCION_AGREGADA(columna)
+FROM tabla
+GROUP BY columna_agrupada;
+```
+
+---
+
+## Script base para practicar
+
+Podés copiar este ejemplo y probar todas las consultas del artículo.
+
+```sql
+CREATE TABLE Ventas (
+  Id INT PRIMARY KEY,
+  Cliente VARCHAR(50),
+  Categoria VARCHAR(50),
+  Producto VARCHAR(50),
+  Cantidad INT,
+  PrecioUnitario DECIMAL(10, 2),
+  FechaVenta DATE
+);
+
+INSERT INTO Ventas (Id, Cliente, Categoria, Producto, Cantidad, PrecioUnitario, FechaVenta) VALUES
+(1, 'Ana', 'Cursos', 'SQL básico', 1, 1200.00, '2026-06-01'),
+(2, 'Bruno', 'Cursos', 'Java básico', 1, 1500.00, '2026-06-01'),
+(3, 'Ana', 'Libros', 'Apunte SQL', 2, 300.00, '2026-06-02'),
+(4, 'Carla', 'Cursos', 'SQL básico', 1, 1200.00, '2026-06-02'),
+(5, 'Bruno', 'Libros', 'Apunte Java', 3, 250.00, '2026-06-03'),
+(6, 'Ana', 'Cursos', 'SQL avanzado', 1, 1800.00, '2026-06-03'),
+(7, 'Carla', 'Libros', 'Apunte SQL', 1, 300.00, '2026-06-03');
+```
+
+---
+
+## 1. GROUP BY simple
+
+Queremos saber cuántas ventas hizo cada cliente.
+
+```sql
+SELECT
+  Cliente,
+  COUNT(*) AS TotalVentas
+FROM Ventas
+GROUP BY Cliente;
+```
+
+Qué pasa:
+
+| Cliente | Qué hace SQL |
+|---------|--------------|
+| Ana | Junta todas las filas de Ana y las cuenta |
+| Bruno | Junta todas las filas de Bruno y las cuenta |
+| Carla | Junta todas las filas de Carla y las cuenta |
+
+`COUNT(*)` cuenta filas. Como agrupamos por `Cliente`, el conteo se calcula por cada cliente.
+
+---
+
+## 2. GROUP BY con SUM
+
+Queremos saber cuántas unidades se vendieron por categoría.
+
+```sql
+SELECT
+  Categoria,
+  SUM(Cantidad) AS UnidadesVendidas
+FROM Ventas
+GROUP BY Categoria;
+```
+
+`SUM(Cantidad)` suma la columna `Cantidad` dentro de cada grupo.
+
+Esto responde preguntas como:
+
+- Cuántos productos se vendieron por categoría.
+- Cuántas horas trabajó cada empleado.
+- Cuántos puntos hizo cada jugador.
+
+---
+
+## 3. GROUP BY con cálculo de importes
+
+Muchas veces no queremos sumar una columna directa, sino una cuenta.
+
+```sql
+SELECT
+  Cliente,
+  SUM(Cantidad * PrecioUnitario) AS TotalGastado
+FROM Ventas
+GROUP BY Cliente;
+```
+
+Acá cada fila calcula `Cantidad * PrecioUnitario`, y después se suma por cliente.
+
+Este patrón es muy común en reportes de ventas.
+
+---
+
+## 4. GROUP BY con AVG, MIN y MAX
+
+También podemos sacar promedios, mínimos y máximos.
+
+```sql
+SELECT
+  Categoria,
+  AVG(PrecioUnitario) AS PrecioPromedio,
+  MIN(PrecioUnitario) AS PrecioMasBajo,
+  MAX(PrecioUnitario) AS PrecioMasAlto
+FROM Ventas
+GROUP BY Categoria;
+```
+
+Funciones agregadas comunes:
+
+| Función | Para qué sirve |
+|---------|----------------|
+| `COUNT(*)` | Contar filas |
+| `SUM(columna)` | Sumar valores |
+| `AVG(columna)` | Calcular promedio |
+| `MIN(columna)` | Obtener el menor valor |
+| `MAX(columna)` | Obtener el mayor valor |
+
+---
+
+## 5. GROUP BY con varias columnas
+
+Podemos agrupar por más de una columna. Por ejemplo: total vendido por cliente y categoría.
+
+```sql
+SELECT
+  Cliente,
+  Categoria,
+  SUM(Cantidad * PrecioUnitario) AS Total
+FROM Ventas
+GROUP BY Cliente, Categoria;
+```
+
+Esto no crea un grupo solo por cliente, sino por la combinación:
+
+- Ana + Cursos
+- Ana + Libros
+- Bruno + Cursos
+- Bruno + Libros
+- Carla + Cursos
+- Carla + Libros
+
+<Callout type="tip" title="Regla mental">
+  Si ponés una columna normal en el `SELECT` y no está dentro de una función como `SUM` o `COUNT`, casi siempre tiene que estar también en el `GROUP BY`.
+</Callout>
+
+---
+
+## 6. GROUP BY con WHERE
+
+`WHERE` filtra filas antes de agrupar.
+
+Ejemplo: calcular ventas por cliente, pero solo para la categoría Cursos.
+
+```sql
+SELECT
+  Cliente,
+  SUM(Cantidad * PrecioUnitario) AS TotalCursos
+FROM Ventas
+WHERE Categoria = 'Cursos'
+GROUP BY Cliente;
+```
+
+Orden lógico:
+
+1. Primero SQL filtra las filas con `WHERE Categoria = 'Cursos'`.
+2. Después agrupa por `Cliente`.
+3. Después calcula el `SUM`.
+
+---
+
+## 7. GROUP BY con HAVING
+
+`HAVING` filtra grupos después de agrupar.
+
+Ejemplo: mostrar solo clientes que gastaron más de 1500.
+
+```sql
+SELECT
+  Cliente,
+  SUM(Cantidad * PrecioUnitario) AS TotalGastado
+FROM Ventas
+GROUP BY Cliente
+HAVING SUM(Cantidad * PrecioUnitario) > 1500;
+```
+
+Diferencia clave:
+
+| Cláusula | Cuándo filtra | Ejemplo |
+|----------|---------------|---------|
+| `WHERE` | Antes del `GROUP BY` | Filas de la categoría Cursos |
+| `HAVING` | Después del `GROUP BY` | Clientes con total mayor a 1500 |
+
+<Callout type="warning" title="Error común">
+  No uses `WHERE SUM(...) > 1500`. Las funciones agregadas como `SUM`, `COUNT` o `AVG` se filtran con `HAVING`.
+</Callout>
+
+---
+
+## 8. GROUP BY para detectar duplicados
+
+Este es un clásico de ejercicios y entrevistas.
+
+Supongamos una tabla simple:
+
+```sql
+CREATE TABLE Personas (
+  Id INT PRIMARY KEY,
+  Nombre VARCHAR(50),
+  Email VARCHAR(100)
+);
+
+INSERT INTO Personas (Id, Nombre, Email) VALUES
+(1, 'Ana', 'ana@mail.com'),
+(2, 'Bruno', 'bruno@mail.com'),
+(3, 'Carla', 'ana@mail.com'),
+(4, 'Diego', 'diego@mail.com'),
+(5, 'Elena', 'bruno@mail.com');
+```
+
+Consulta para encontrar emails repetidos:
+
+```sql
+SELECT
+  Email,
+  COUNT(*) AS Cantidad
+FROM Personas
+GROUP BY Email
+HAVING COUNT(*) > 1;
+```
+
+La idea:
+
+1. Agrupamos por `Email`.
+2. Contamos cuántas veces aparece cada email.
+3. Con `HAVING COUNT(*) > 1` dejamos solo los repetidos.
+
+---
+
+## 9. GROUP BY con ORDER BY
+
+Podemos ordenar el resultado final.
+
+```sql
+SELECT
+  Cliente,
+  SUM(Cantidad * PrecioUnitario) AS TotalGastado
+FROM Ventas
+GROUP BY Cliente
+ORDER BY TotalGastado DESC;
+```
+
+Esto devuelve los clientes de mayor a menor gasto.
+
+También podrías ordenar por conteo:
+
+```sql
+SELECT
+  Cliente,
+  COUNT(*) AS TotalVentas
+FROM Ventas
+GROUP BY Cliente
+ORDER BY TotalVentas DESC;
+```
+
+---
+
+## 10. GROUP BY por fecha
+
+Si la columna es una fecha completa, podés agrupar por día directamente.
+
+```sql
+SELECT
+  FechaVenta,
+  COUNT(*) AS VentasDelDia,
+  SUM(Cantidad * PrecioUnitario) AS TotalDelDia
+FROM Ventas
+GROUP BY FechaVenta
+ORDER BY FechaVenta;
+```
+
+Si tenés una columna con fecha y hora, muchas bases permiten convertirla a fecha para agrupar por día. En SQL Server suele verse así:
+
+```sql
+SELECT
+  CAST(FechaVenta AS DATE) AS Dia,
+  COUNT(*) AS VentasDelDia
+FROM Ventas
+GROUP BY CAST(FechaVenta AS DATE);
+```
+
+---
+
+## 11. GROUP BY con CASE
+
+`CASE` sirve para crear grupos personalizados.
+
+Ejemplo: separar ventas chicas y ventas grandes.
+
+```sql
+SELECT
+  CASE
+    WHEN Cantidad * PrecioUnitario >= 1000 THEN 'Venta grande'
+    ELSE 'Venta chica'
+  END AS TipoVenta,
+  COUNT(*) AS CantidadVentas
+FROM Ventas
+GROUP BY
+  CASE
+    WHEN Cantidad * PrecioUnitario >= 1000 THEN 'Venta grande'
+    ELSE 'Venta chica'
+  END;
+```
+
+Este patrón se usa cuando el grupo no existe como columna, pero lo podés construir con una condición.
+
+---
+
+## 12. GROUP BY con JOIN
+
+En proyectos reales es muy común agrupar después de unir tablas.
+
+Ejemplo simple con clientes y ventas:
+
+```sql
+CREATE TABLE Clientes (
+  Id INT PRIMARY KEY,
+  Nombre VARCHAR(50),
+  Ciudad VARCHAR(50)
+);
+
+CREATE TABLE VentasPorCliente (
+  Id INT PRIMARY KEY,
+  ClienteId INT,
+  Total DECIMAL(10, 2)
+);
+```
+
+Consulta: total vendido por ciudad.
+
+```sql
+SELECT
+  C.Ciudad,
+  SUM(V.Total) AS TotalVendido
+FROM Clientes C
+JOIN VentasPorCliente V
+  ON C.Id = V.ClienteId
+GROUP BY C.Ciudad;
+```
+
+Primero se relaciona cada venta con su cliente. Después se agrupa por ciudad.
+
+---
+
+## 13. GROUP BY con subconsulta o CTE
+
+Cuando una consulta empieza a quedar larga, conviene separar pasos.
+
+```sql
+WITH TotalesPorCliente AS (
+  SELECT
+    Cliente,
+    SUM(Cantidad * PrecioUnitario) AS TotalGastado
+  FROM Ventas
+  GROUP BY Cliente
+)
+SELECT
+  Cliente,
+  TotalGastado
+FROM TotalesPorCliente
+WHERE TotalGastado > 1500;
+```
+
+Es lo mismo que usar `HAVING`, pero a veces se lee más claro porque separa:
+
+1. Calcular totales.
+2. Filtrar resultados calculados.
+
+---
+
+## 14. GROUP BY y DISTINCT no son lo mismo
+
+`DISTINCT` elimina duplicados. `GROUP BY` agrupa y permite calcular.
+
+Lista de clientes sin repetir:
+
+```sql
+SELECT DISTINCT Cliente
+FROM Ventas;
+```
+
+Clientes con cantidad de ventas:
+
+```sql
+SELECT
+  Cliente,
+  COUNT(*) AS TotalVentas
+FROM Ventas
+GROUP BY Cliente;
+```
+
+Si solo querés ver valores únicos, `DISTINCT` alcanza. Si necesitás contar, sumar o promediar, usá `GROUP BY`.
+
+---
+
+## 15. GROUP BY con ROLLUP, CUBE y GROUPING SETS
+
+Estas formas son más avanzadas, pero aparecen en reportes.
+
+### ROLLUP
+
+`ROLLUP` agrega subtotales.
+
+```sql
+SELECT
+  Categoria,
+  Producto,
+  SUM(Cantidad * PrecioUnitario) AS Total
+FROM Ventas
+GROUP BY ROLLUP (Categoria, Producto);
+```
+
+Puede devolver:
+
+- Total por categoría y producto.
+- Subtotal por categoría.
+- Total general.
+
+### CUBE
+
+`CUBE` genera más combinaciones de subtotales.
+
+```sql
+SELECT
+  Cliente,
+  Categoria,
+  SUM(Cantidad * PrecioUnitario) AS Total
+FROM Ventas
+GROUP BY CUBE (Cliente, Categoria);
+```
+
+Puede servir para reportes donde querés analizar por cliente, por categoría, por ambas cosas y por total general.
+
+### GROUPING SETS
+
+`GROUPING SETS` te deja elegir exactamente qué agrupaciones querés.
+
+```sql
+SELECT
+  Cliente,
+  Categoria,
+  SUM(Cantidad * PrecioUnitario) AS Total
+FROM Ventas
+GROUP BY GROUPING SETS (
+  (Cliente),
+  (Categoria),
+  (Cliente, Categoria)
+);
+```
+
+<Callout type="info" title="Nota de compatibilidad">
+  `ROLLUP`, `CUBE` y `GROUPING SETS` existen en motores como SQL Server y PostgreSQL. La sintaxis puede variar un poco según la base de datos.
+</Callout>
+
+---
+
+## Errores comunes con GROUP BY
+
+### Error 1: Seleccionar columnas que no están agrupadas
+
+```sql
+SELECT
+  Cliente,
+  Producto,
+  COUNT(*) AS TotalVentas
+FROM Ventas
+GROUP BY Cliente;
+```
+
+El problema es `Producto`: si agrupás solo por `Cliente`, puede haber muchos productos para el mismo cliente. SQL no sabe cuál mostrar.
+
+Solución:
+
+```sql
+SELECT
+  Cliente,
+  Producto,
+  COUNT(*) AS TotalVentas
+FROM Ventas
+GROUP BY Cliente, Producto;
+```
+
+### Error 2: Usar WHERE para filtrar agregados
+
+Incorrecto:
+
+```sql
+SELECT
+  Cliente,
+  COUNT(*) AS TotalVentas
+FROM Ventas
+WHERE COUNT(*) > 1
+GROUP BY Cliente;
+```
+
+Correcto:
+
+```sql
+SELECT
+  Cliente,
+  COUNT(*) AS TotalVentas
+FROM Ventas
+GROUP BY Cliente
+HAVING COUNT(*) > 1;
+```
+
+### Error 3: Olvidar que NULL también agrupa
+
+Si una columna tiene valores `NULL`, `GROUP BY` los junta en un mismo grupo.
+
+```sql
+SELECT
+  Categoria,
+  COUNT(*) AS Total
+FROM Ventas
+GROUP BY Categoria;
+```
+
+Si hubiera ventas sin categoría, aparecerían agrupadas como `NULL`.
+
+---
+
+## Orden recomendado para escribir consultas con GROUP BY
+
+Aunque SQL se ejecuta internamente en otro orden, para aprender conviene escribir así:
+
+```sql
+SELECT
+  columna_grupo,
+  COUNT(*) AS total
+FROM tabla
+WHERE condicion_sobre_filas
+GROUP BY columna_grupo
+HAVING condicion_sobre_grupos
+ORDER BY total DESC;
+```
+
+Y pensarlo así:
+
+| Paso | Pregunta |
+|------|----------|
+| `FROM` | De qué tabla salen los datos |
+| `WHERE` | Qué filas necesito antes de agrupar |
+| `GROUP BY` | Por qué columna voy a formar grupos |
+| `SELECT` | Qué quiero mostrar por cada grupo |
+| `HAVING` | Qué grupos quiero dejar |
+| `ORDER BY` | Cómo quiero ordenar el resultado |
+
+---
+
+## Resumen rápido
+
+| Necesidad | Consulta típica |
+|-----------|-----------------|
+| Contar por grupo | `COUNT(*)` + `GROUP BY` |
+| Sumar por grupo | `SUM(columna)` + `GROUP BY` |
+| Filtrar filas antes de agrupar | `WHERE` |
+| Filtrar grupos ya calculados | `HAVING` |
+| Agrupar por más detalle | `GROUP BY columna1, columna2` |
+| Detectar duplicados | `GROUP BY campo HAVING COUNT(*) > 1` |
+| Crear categorías manuales | `CASE` + `GROUP BY` |
+| Reportes con subtotales | `ROLLUP`, `CUBE`, `GROUPING SETS` |
+
+Si entendés bien `GROUP BY`, después se vuelven mucho más fáciles los reportes, dashboards, ejercicios de entrevistas y consultas reales de trabajo.

@@ -1,0 +1,49 @@
+---
+import PillarLayout from '../layouts/PillarLayout.astro';
+import { getArticlesByPillar, getArticleUrl } from '../lib/articles';
+
+const pillar = 'recursos';
+const articles = await getArticlesByPillar(pillar);
+
+const title = 'Recursos y scripts para estudiantes';
+const description =
+  'Biblioteca directa de apuntes, scripts y ejemplos prácticos para alumnos que quieren repasar programación, SQL y bases de datos sin perder tiempo.';
+const keywords = [
+  'recursos programación',
+  'scripts SQL',
+  'apuntes programación',
+  'biblioteca para estudiantes',
+  'ejemplos SQL',
+];
+
+const breadcrumbs = [
+  { label: 'Inicio', href: '/' },
+  { label: 'Recursos', href: '/recursos' },
+];
+---
+
+<PillarLayout
+  title={title}
+  description={description}
+  canonical="/recursos"
+  keywords={keywords}
+  breadcrumbs={breadcrumbs}
+>
+  <section class="pillar-topics" aria-labelledby="recursos-articles-title">
+    <h2 id="recursos-articles-title">Biblioteca de recursos</h2>
+    {articles.length > 0 ? (
+      <ul class="article-list">
+        {articles.map((article) => (
+          <li>
+            <a href={getArticleUrl(article)}>
+              <span class="related-title">{article.data.title}</span>
+              <span class="related-description">{article.data.description}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p>Próximamente publicaremos scripts, apuntes y recursos para estudiar.</p>
+    )}
+  </section>
+</PillarLayout>
