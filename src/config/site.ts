@@ -12,7 +12,7 @@ export const site = {
   locale: 'es_ES',
   author: {
     name: 'Kevin Medina',
-    url: 'https://www.youtube.com/@kevinmedinarobles',
+    url: 'https://www.youtube.com/@ProgramandoConKevin/videos',
   },
   developer: {
     name: 'Kevin Medina',
@@ -28,13 +28,13 @@ export const site = {
     ctaHref: '#youtube',
   },
   youtube: {
-    channelUrl: 'https://www.youtube.com/@kevinmedinarobles',
-    channelName: 'Kevin Medina',
+    channelUrl: 'https://www.youtube.com/@ProgramandoConKevin/videos',
+    channelName: 'Programando Con Kevin',
   },
   social: [
     {
       label: 'YouTube',
-      href: 'https://www.youtube.com/@kevinmedinarobles',
+      href: 'https://www.youtube.com/@ProgramandoConKevin/videos',
     },
     {
       label: 'LinkedIn',
@@ -45,7 +45,7 @@ export const site = {
   navigation: [
     { label: 'Inicio', href: '/' },
     { label: 'Recursos', href: '/recursos' },
-    { label: 'YouTube', href: 'https://www.youtube.com/@kevinmedinarobles', external: true },
+    { label: 'YouTube', href: 'https://www.youtube.com/@ProgramandoConKevin/videos', external: true },
     { label: 'Contacto', href: 'https://www.linkedin.com/in/kevinnicolasmr/' },
   ],
   footer: {
