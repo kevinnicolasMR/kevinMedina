@@ -1,0 +1,202 @@
+---
+title: 'GROUP BY en SQL Server: contar y sumar ventas por cliente'
+description: 'Tutorial práctico de GROUP BY en SQL Server para principiantes: crear una tabla de ventas, insertar datos y agrupar clientes o categorías con COUNT y SUM.'
+pillar: sql
+slug: group-by-sql-server-clientes-ventas
+publishedDate: 2026-07-05
+keywords:
+  - GROUP BY SQL Server
+  - aprender GROUP BY SQL
+  - COUNT SQL Server
+  - SUM SQL Server
+  - tutorial SQL para principiantes
+  - agrupar ventas SQL
+youtubeVideoId: fpwDc76ksfw
+relatedSlugs:
+  - group-by-sql-formas-comunes-ejemplos
+  - having-sql-ejemplos-simples
+  - si-quieres-aprender-sql-empieza-por-esto-crud-completo
+---
+
+import Callout from '../../components/Callout.astro';
+import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
+
+<YouTubeEmbed
+  videoId="fpwDc76ksfw"
+  title="GROUP BY en SQL Server: contar y sumar ventas"
+  caption="Video del curso SQL: GROUP BY con una tabla de ventas, COUNT, SUM y ejemplos paso a paso en SSMS"
+/>
+
+<Callout type="info" title="Recurso complementario">
+  Esta página acompaña el video. Si querés una explicación más completa, con más variantes y ejemplos, revisá la [biblioteca de GROUP BY en SQL](/recursos/group-by-sql-formas-comunes-ejemplos).
+</Callout>
+
+## GROUP BY en SQL Server explicado con ventas
+
+En este video seguimos con el curso de SQL y entramos en `GROUP BY`, una de las partes más importantes cuando querés pasar de ver filas individuales a obtener **resúmenes**.
+
+La idea del ejercicio es simple: crear una tabla de ventas, cargar datos de ejemplo y responder preguntas como:
+
+- Cuántas ventas tiene cada cliente.
+- Cuántas unidades se vendieron por categoría.
+- Cómo usar `COUNT` y `SUM` junto con `GROUP BY`.
+
+No buscamos memorizar todo de golpe. La idea es que puedas ver el resultado, romperlo en pasos y entender qué está pasando.
+
+---
+
+## Antes de agrupar: crear datos de ejemplo
+
+Para practicar `GROUP BY` necesitás datos. Por eso en el video primero vamos a SQL Server Management Studio, creamos una nueva query, nos aseguramos de tener seleccionada la base de datos correcta y creamos una tabla `Ventas`.
+
+```sql
+CREATE TABLE Ventas (
+  Id INT PRIMARY KEY,
+  Cliente VARCHAR(50),
+  Categoria VARCHAR(50),
+  Producto VARCHAR(50),
+  Cantidad INT,
+  PrecioUnitario DECIMAL(10, 2)
+);
+```
+
+Después insertamos datos para tener algo que agrupar:
+
+```sql
+INSERT INTO Ventas (Id, Cliente, Categoria, Producto, Cantidad, PrecioUnitario) VALUES
+(1, 'Ana', 'Cursos', 'SQL básico', 1, 1200.00),
+(2, 'Bruno', 'Cursos', 'Java básico', 1, 1500.00),
+(3, 'Ana', 'Libros', 'Apunte SQL', 2, 300.00),
+(4, 'Carla', 'Cursos', 'SQL básico', 1, 1200.00),
+(5, 'Bruno', 'Libros', 'Apunte Java', 3, 250.00),
+(6, 'Ana', 'Cursos', 'SQL avanzado', 1, 1800.00);
+```
+
+Podés revisar la tabla con:
+
+```sql
+SELECT *
+FROM Ventas;
+```
+
+En SSMS suelo seleccionar solo la consulta que quiero ejecutar y usar `Alt + X` para correrla más rápido.
+
+---
+
+## Qué hace GROUP BY
+
+`GROUP BY` te pide algo muy concreto: **en base a qué columna querés agrupar**.
+
+En el ejemplo del video usamos `Cliente`. Entonces SQL toma las filas y las separa como si armara mesas:
+
+- Una mesa para Ana.
+- Una mesa para Bruno.
+- Una mesa para Carla.
+
+Cada venta va a la mesa del cliente correspondiente. Después SQL “condensa” cada grupo en una sola fila de resultado.
+
+Por eso no alcanza con hacer esto:
+
+```sql
+SELECT *
+FROM Ventas
+GROUP BY Cliente;
+```
+
+El problema es que `*` intenta mostrar todas las columnas, pero dentro del grupo puede haber distintos productos, cantidades o precios. SQL no sabe cuál de esos valores individuales debería mostrar.
+
+La solución es elegir:
+
+- La columna por la que agrupás.
+- Una función agregada para resumir el resto.
+
+---
+
+## Ejemplo 1: contar ventas por cliente
+
+Si queremos saber cuántas ventas tiene cada cliente, usamos `COUNT`.
+
+```sql
+SELECT
+  Cliente,
+  COUNT(*) AS TotalVentas
+FROM Ventas
+GROUP BY Cliente;
+```
+
+La lectura es:
+
+1. `FROM Ventas`: tomo la tabla de ventas.
+2. `GROUP BY Cliente`: agrupo por cliente.
+3. `COUNT(*)`: cuento cuántas filas tiene cada grupo.
+4. `AS TotalVentas`: le doy un nombre claro a la columna calculada.
+
+Este es el primer resultado importante del video: dejamos de ver cada venta por separado y pasamos a ver un resumen por cliente.
+
+---
+
+## Ejemplo 2: sumar unidades por categoría
+
+La misma lógica sirve para sumar. Ahora no nos importa contar ventas por cliente, sino saber cuántas unidades se vendieron por categoría.
+
+```sql
+SELECT
+  Categoria,
+  SUM(Cantidad) AS CantidadVentas
+FROM Ventas
+GROUP BY Categoria;
+```
+
+Acá cambia la pregunta:
+
+- Antes agrupábamos por `Cliente`.
+- Ahora agrupamos por `Categoria`.
+- Antes usábamos `COUNT`.
+- Ahora usamos `SUM(Cantidad)`.
+
+La estructura sigue siendo la misma.
+
+---
+
+## La regla práctica
+
+<Callout type="tip" title="Idea para recordar">
+  En `GROUP BY`, primero definís por qué columna querés formar grupos. Después creás columnas calculadas con funciones como `COUNT`, `SUM`, `MIN`, `MAX` o `AVG`.
+</Callout>
+
+En el video lo explico como una forma de “aplastar” o condensar varias filas en una sola línea por grupo. Esa imagen mental ayuda bastante al principio.
+
+Si agrupás por cliente, el resultado final tiene una fila por cliente. Si agrupás por categoría, el resultado final tiene una fila por categoría.
+
+---
+
+## Otras funciones que podés usar
+
+Una vez que entendés la lógica, podés cambiar la función según lo que necesites:
+
+| Función | Para qué sirve |
+|---------|----------------|
+| `COUNT(*)` | Contar filas por grupo |
+| `SUM(Cantidad)` | Sumar cantidades |
+| `MIN(PrecioUnitario)` | Ver el valor mínimo |
+| `MAX(PrecioUnitario)` | Ver el valor máximo |
+| `AVG(PrecioUnitario)` | Calcular el promedio |
+
+Para ejemplos más completos, con más casos y errores comunes, usá esta guía:
+
+[Ver recurso completo de GROUP BY en SQL](/recursos/group-by-sql-formas-comunes-ejemplos)
+
+---
+
+## Resumen del video
+
+En este capítulo del curso SQL vimos:
+
+- Cómo crear una tabla `Ventas`.
+- Cómo insertar datos de ejemplo.
+- Por qué necesitamos datos para poder agrupar.
+- Cómo contar ventas por cliente con `COUNT(*)`.
+- Cómo sumar cantidades por categoría con `SUM(Cantidad)`.
+- Por qué no conviene usar `SELECT *` cuando trabajamos con `GROUP BY`.
+
+Si este contenido te aporta valor, en el video también te invito a suscribirte, dejar like y comentar qué función o tema te gustaría ver en los próximos capítulos del curso SQL.

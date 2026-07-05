@@ -1,0 +1,256 @@
+---
+title: 'HAVING en SQL Server: filtrar grupos después de GROUP BY'
+description: 'Tutorial práctico de HAVING en SQL Server para principiantes: diferencia entre WHERE y HAVING, cómo filtrar filas o grupos y ejemplos con COUNT, SUM, LIKE y AND.'
+pillar: sql
+slug: having-sql-server-filtrar-grupos-where-group-by
+publishedDate: 2026-07-05
+keywords:
+  - HAVING SQL Server
+  - WHERE vs HAVING SQL
+  - filtrar grupos SQL
+  - GROUP BY HAVING
+  - aprender SQL Server
+  - tutorial SQL para principiantes
+youtubeVideoId: NZyF2k37Oz8
+relatedSlugs:
+  - having-sql-ejemplos-simples
+  - group-by-sql-server-clientes-ventas
+  - group-by-sql-formas-comunes-ejemplos
+---
+
+import Callout from '../../components/Callout.astro';
+import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
+
+<YouTubeEmbed
+  videoId="NZyF2k37Oz8"
+  title="HAVING en SQL Server: filtrar grupos después de GROUP BY"
+  caption="Video del curso SQL: diferencia entre WHERE y HAVING, filtros sobre filas y filtros sobre grupos"
+/>
+
+<Callout type="info" title="Scripts del video">
+  Para seguir esta clase, entrá al recurso de [HAVING en SQL con ejemplos simples](/recursos/having-sql-ejemplos-simples). Ahí tenés las tablas y scripts base para copiar, ejecutar y practicar.
+</Callout>
+
+## HAVING en SQL Server: filtrar grupos
+
+Si querés aprender a filtrar grupos, no alcanza solo con saber usar `WHERE`. También tenés que aprender `HAVING` y entender cuándo conviene combinar ambos.
+
+En la clase anterior vimos cómo usar `GROUP BY` para agrupar ventas por cliente. Si todavía no tenés claro ese concepto, te recomiendo pasar primero por el video de [GROUP BY en SQL Server](/sql/group-by-sql-server-clientes-ventas) o por la [guía completa de GROUP BY](/recursos/group-by-sql-formas-comunes-ejemplos).
+
+En este video vamos un paso más:
+
+- `WHERE` filtra filas individuales.
+- `HAVING` filtra grupos ya creados.
+- Ambos pueden trabajar juntos en una misma consulta.
+
+---
+
+## Preparar el ejemplo
+
+La idea del video es trabajar con una tabla `Ventas`, donde tenemos clientes como Ana, Bruno y Carla, junto con cantidades y precios unitarios.
+
+La consulta base agrupa por cliente:
+
+```sql
+SELECT
+  Cliente,
+  COUNT(*) AS CantidadVentas,
+  SUM(PrecioUnitario) AS Total
+FROM Ventas
+GROUP BY Cliente;
+```
+
+Esto genera un resumen por cliente. Ya no estamos mirando cada venta individual, sino el grupo completo de Ana, el grupo completo de Bruno, el grupo completo de Carla, etc.
+
+---
+
+## La diferencia práctica entre WHERE y HAVING
+
+Esta es la parte importante del video.
+
+`WHERE` filtra antes de agrupar. Afecta filas individuales.
+
+```sql
+SELECT
+  Cliente,
+  COUNT(*) AS CantidadVentas,
+  SUM(PrecioUnitario) AS Total
+FROM Ventas
+WHERE PrecioUnitario > 1000
+GROUP BY Cliente;
+```
+
+Si Ana tenía una venta de 300, esa fila se elimina antes de formar el grupo. Entonces el total de Ana cambia, porque esa venta ya no participa en el cálculo.
+
+En cambio, `HAVING` filtra después de agrupar. Afecta el grupo ya armado.
+
+```sql
+SELECT
+  Cliente,
+  COUNT(*) AS CantidadVentas,
+  SUM(PrecioUnitario) AS Total
+FROM Ventas
+GROUP BY Cliente
+HAVING SUM(PrecioUnitario) > 1000;
+```
+
+Acá SQL primero arma el total por cliente y recién después decide qué grupos mostrar.
+
+<Callout type="tip" title="Regla mental">
+  `WHERE` toca filas. `HAVING` toca grupos. Esa es la diferencia que tenés que guardar.
+</Callout>
+
+---
+
+## HAVING va después de GROUP BY
+
+Un error común es intentar poner `HAVING` antes del `GROUP BY`.
+
+Incorrecto:
+
+```sql
+SELECT
+  Cliente,
+  COUNT(*) AS CantidadVentas
+FROM Ventas
+HAVING COUNT(*) > 1
+GROUP BY Cliente;
+```
+
+Correcto:
+
+```sql
+SELECT
+  Cliente,
+  COUNT(*) AS CantidadVentas
+FROM Ventas
+GROUP BY Cliente
+HAVING COUNT(*) > 1;
+```
+
+`HAVING` necesita que el grupo ya exista. Por eso va después de `GROUP BY`.
+
+---
+
+## Filtrar grupos por nombre de cliente
+
+También podés usar `HAVING` para filtrar grupos según la columna agrupada.
+
+Ejemplo: mostrar todos menos Bruno.
+
+```sql
+SELECT
+  Cliente,
+  COUNT(*) AS CantidadVentas,
+  SUM(PrecioUnitario) AS Total
+FROM Ventas
+GROUP BY Cliente
+HAVING Cliente <> 'Bruno';
+```
+
+Esto debería devolver grupos como Ana y Carla, dejando fuera a Bruno.
+
+También podés combinar condiciones con `AND`:
+
+```sql
+SELECT
+  Cliente,
+  COUNT(*) AS CantidadVentas,
+  SUM(PrecioUnitario) AS Total
+FROM Ventas
+GROUP BY Cliente
+HAVING Cliente <> 'Bruno'
+   AND Cliente <> 'Ana';
+```
+
+---
+
+## HAVING con LIKE
+
+Otra forma de filtrar es usando `LIKE`.
+
+```sql
+SELECT
+  Cliente,
+  COUNT(*) AS CantidadVentas,
+  SUM(PrecioUnitario) AS Total
+FROM Ventas
+GROUP BY Cliente
+HAVING Cliente LIKE '%n%';
+```
+
+Esto muestra clientes cuyo nombre contiene la letra `n`.
+
+En datos reales, este tipo de filtro puede servir cuando tenés muchos registros y querés encontrar grupos que cumplan cierto patrón.
+
+---
+
+## HAVING con COUNT
+
+Uno de los usos más comunes de `HAVING` es filtrar grupos por cantidad.
+
+```sql
+SELECT
+  Cliente,
+  COUNT(*) AS CantidadVentas
+FROM Ventas
+GROUP BY Cliente
+HAVING COUNT(*) > 1;
+```
+
+Esto muestra clientes que tienen más de una venta. Si Carla tiene una sola venta, queda afuera del resultado.
+
+---
+
+## HAVING con SUM
+
+También podés filtrar por totales.
+
+```sql
+SELECT
+  Cliente,
+  SUM(PrecioUnitario) AS Total
+FROM Ventas
+GROUP BY Cliente
+HAVING SUM(PrecioUnitario) > 2000;
+```
+
+Primero SQL suma el total por cliente. Después `HAVING` deja solo los clientes que superan ese monto.
+
+---
+
+## Usar WHERE y HAVING juntos
+
+En una consulta real, muchas veces vas a usar ambos:
+
+```sql
+SELECT
+  Cliente,
+  COUNT(*) AS CantidadVentas,
+  SUM(PrecioUnitario) AS Total
+FROM Ventas
+WHERE PrecioUnitario > 1000
+GROUP BY Cliente
+HAVING COUNT(*) > 1;
+```
+
+Lectura paso a paso:
+
+1. `WHERE PrecioUnitario > 1000` filtra ventas individuales.
+2. `GROUP BY Cliente` agrupa lo que quedó.
+3. `HAVING COUNT(*) > 1` filtra clientes con más de una venta dentro de ese resultado.
+
+---
+
+## Resumen del video
+
+En este capítulo del curso SQL vimos:
+
+- Por qué `WHERE` y `HAVING` parecen similares, pero no hacen lo mismo.
+- Cómo `WHERE` afecta filas individuales antes de agrupar.
+- Cómo `HAVING` afecta grupos ya creados después de `GROUP BY`.
+- Por qué `HAVING` tiene que escribirse después de `GROUP BY`.
+- Cómo combinar condiciones con `AND`.
+- Cómo usar `LIKE`, `COUNT` y `SUM` con `HAVING`.
+
+Si querés practicar con una versión más resumida y directa, usá el recurso de [HAVING en SQL con ejemplos simples](/recursos/having-sql-ejemplos-simples).
