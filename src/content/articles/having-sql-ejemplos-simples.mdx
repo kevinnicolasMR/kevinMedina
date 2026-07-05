@@ -1,0 +1,197 @@
+---
+title: 'HAVING en SQL: explicación rápida con ejemplos simples'
+description: 'Recurso corto para entender HAVING en SQL: cuándo usarlo, diferencia con WHERE y ejemplos claros con COUNT, SUM y AVG.'
+pillar: recursos
+slug: having-sql-ejemplos-simples
+publishedDate: 2026-07-05
+keywords:
+  - HAVING SQL
+  - ejemplos HAVING
+  - WHERE vs HAVING
+  - GROUP BY SQL
+  - SQL para estudiantes
+relatedSlugs:
+  - group-by-sql-formas-comunes-ejemplos
+  - resuelvo-ejercicios-sql-leetcode-join-group-by
+  - si-quieres-aprender-sql-empieza-por-esto-crud-completo
+---
+
+import Callout from '../../components/Callout.astro';
+
+<Callout type="info" title="Idea principal">
+  `HAVING` sirve para filtrar resultados después de usar `GROUP BY`. Pensalo como el filtro para grupos ya calculados.
+</Callout>
+
+## HAVING en SQL: directo al punto
+
+Usamos `HAVING` cuando queremos filtrar por un resultado agregado, por ejemplo:
+
+- Clientes con más de 2 compras.
+- Productos vendidos más de 10 veces.
+- Categorías con ventas mayores a 1000.
+- Materias con promedio mayor o igual a 6.
+
+La forma base es:
+
+```sql
+SELECT columna, FUNCION_AGREGADA(columna)
+FROM tabla
+GROUP BY columna
+HAVING condicion_sobre_el_grupo;
+```
+
+---
+
+## Tabla de ejemplo
+
+```sql
+CREATE TABLE Ventas (
+  Id INT PRIMARY KEY,
+  Cliente VARCHAR(50),
+  Categoria VARCHAR(50),
+  Cantidad INT,
+  PrecioUnitario DECIMAL(10, 2)
+);
+
+INSERT INTO Ventas (Id, Cliente, Categoria, Cantidad, PrecioUnitario) VALUES
+(1, 'Ana', 'Cursos', 1, 1200.00),
+(2, 'Bruno', 'Cursos', 1, 1500.00),
+(3, 'Ana', 'Libros', 2, 300.00),
+(4, 'Carla', 'Cursos', 1, 1200.00),
+(5, 'Bruno', 'Libros', 3, 250.00),
+(6, 'Ana', 'Cursos', 1, 1800.00);
+```
+
+---
+
+## 1. HAVING con COUNT
+
+Queremos ver clientes que tienen más de una venta.
+
+```sql
+SELECT
+  Cliente,
+  COUNT(*) AS TotalVentas
+FROM Ventas
+GROUP BY Cliente
+HAVING COUNT(*) > 1;
+```
+
+Qué hace:
+
+1. Agrupa las ventas por cliente.
+2. Cuenta cuántas ventas tiene cada cliente.
+3. Deja solo los clientes con más de una venta.
+
+---
+
+## 2. HAVING con SUM
+
+Queremos ver clientes que gastaron más de 1500.
+
+```sql
+SELECT
+  Cliente,
+  SUM(Cantidad * PrecioUnitario) AS TotalGastado
+FROM Ventas
+GROUP BY Cliente
+HAVING SUM(Cantidad * PrecioUnitario) > 1500;
+```
+
+Este caso es muy común en reportes: primero calculás el total por cliente y después filtrás por ese total.
+
+---
+
+## 3. HAVING con AVG
+
+Supongamos una tabla de notas:
+
+```sql
+CREATE TABLE Notas (
+  Id INT PRIMARY KEY,
+  Alumno VARCHAR(50),
+  Materia VARCHAR(50),
+  Nota DECIMAL(4, 2)
+);
+```
+
+Queremos materias con promedio aprobado.
+
+```sql
+SELECT
+  Materia,
+  AVG(Nota) AS Promedio
+FROM Notas
+GROUP BY Materia
+HAVING AVG(Nota) >= 6;
+```
+
+`AVG(Nota)` calcula el promedio por materia. `HAVING` deja solo las materias cuyo promedio cumple la condición.
+
+---
+
+## WHERE vs HAVING
+
+Esta es la diferencia más importante:
+
+| Cláusula | Cuándo filtra | Ejemplo |
+|----------|---------------|---------|
+| `WHERE` | Antes de agrupar | Ventas de la categoría Cursos |
+| `HAVING` | Después de agrupar | Clientes con total mayor a 1500 |
+
+Ejemplo usando los dos:
+
+```sql
+SELECT
+  Cliente,
+  SUM(Cantidad * PrecioUnitario) AS TotalCursos
+FROM Ventas
+WHERE Categoria = 'Cursos'
+GROUP BY Cliente
+HAVING SUM(Cantidad * PrecioUnitario) > 1500;
+```
+
+Qué pasa ahí:
+
+1. `WHERE Categoria = 'Cursos'` deja solo ventas de cursos.
+2. `GROUP BY Cliente` agrupa esas ventas por cliente.
+3. `HAVING SUM(...) > 1500` filtra clientes cuyo total en cursos supera 1500.
+
+<Callout type="warning" title="Error común">
+  No escribas `WHERE COUNT(*) > 1` o `WHERE SUM(...) > 1000`. Cuando filtrás usando `COUNT`, `SUM`, `AVG`, `MIN` o `MAX`, normalmente necesitás `HAVING`.
+</Callout>
+
+---
+
+## Ejemplo clásico: duplicados
+
+Encontrar emails repetidos:
+
+```sql
+SELECT
+  Email,
+  COUNT(*) AS Cantidad
+FROM Personas
+GROUP BY Email
+HAVING COUNT(*) > 1;
+```
+
+Este patrón aparece muchísimo en ejercicios:
+
+- Agrupar por el campo que puede repetirse.
+- Contar cuántas veces aparece.
+- Filtrar con `HAVING COUNT(*) > 1`.
+
+---
+
+## Resumen rápido
+
+| Necesito | Uso |
+|----------|-----|
+| Filtrar filas normales | `WHERE` |
+| Filtrar grupos calculados | `HAVING` |
+| Detectar duplicados | `GROUP BY campo HAVING COUNT(*) > 1` |
+| Filtrar totales | `HAVING SUM(...) > valor` |
+| Filtrar promedios | `HAVING AVG(...) >= valor` |
+
+Si la condición depende de una función agregada, casi seguro va en `HAVING`.
