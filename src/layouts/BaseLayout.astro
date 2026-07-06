@@ -59,5 +59,19 @@ const jsonLd = [buildWebSiteSchema(), ...schemas];
       <slot />
     </main>
     <Footer />
+    <script>
+      const canUseServiceWorker =
+        'serviceWorker' in navigator &&
+        window.isSecureContext &&
+        !['localhost', '127.0.0.1'].includes(window.location.hostname);
+
+      if (canUseServiceWorker) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch((error) => {
+            console.warn('No se pudo registrar el service worker.', error);
+          });
+        });
+      }
+    </script>
   </body>
 </html>
