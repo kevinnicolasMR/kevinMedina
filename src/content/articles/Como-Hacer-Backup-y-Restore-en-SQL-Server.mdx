@@ -1,0 +1,143 @@
+---
+title: 'Cómo hacer backup y restore en SQL Server (SSMS)'
+description: 'Tutorial práctico para crear respaldos .bak de tu base de datos en SQL Server Management Studio, restaurarlos sin perder datos y evitar errores de versiones o conexiones activas.'
+pillar: sql
+slug: como-hacer-backup-y-restore-en-sql-server
+publishedDate: 2026-07-09
+keywords:
+  - backup SQL Server
+  - restore SQL Server
+  - respaldo base de datos SQL
+  - SSMS backup restore
+  - archivo .bak SQL Server
+  - tutorial SQL Server
+youtubeVideoId: 8BZ9z24cvkc
+relatedSlugs:
+  - instalando-sql-server-management-2026
+  - si-quieres-aprender-sql-empieza-por-esto-crud-completo
+  - group-by-sql-server-clientes-ventas
+---
+
+import Callout from '../../components/Callout.astro';
+import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
+
+<YouTubeEmbed
+  videoId="8BZ9z24cvkc"
+  title="Cómo hacer backup y restore en SQL Server"
+  caption="Video del curso SQL: crear respaldos .bak, restaurar bases de datos y evitar errores comunes en SSMS"
+/>
+
+<Callout type="info" title="Requisito previo">
+  Este tutorial asume que ya tenés **SQL Server** y **SSMS** instalados. Si no, empezá por la guía de [instalación de SSMS y SQL Server Express](/sql/instalando-sql-server-management-2026).
+</Callout>
+
+## Backup y restore en SQL Server: tu red de seguridad
+
+Cuando trabajás con datos reales —ya sea en un proyecto personal, en la universidad o con clientes— los **respaldos** son lo que más tranquilidad te pueden dar.
+
+Si un día hacés algo que no debías, borrás datos por error o una consulta sale mal, no es el fin del mundo: **recuperás la información y seguís adelante**. Eso es exactamente para lo que sirve un backup.
+
+En este video del curso SQL vemos cómo hacerlo desde **SQL Server Management Studio (SSMS)**. El flujo es el mismo en la mayoría de interfaces de administración de bases de datos; acá lo hacemos paso a paso con SQL Server.
+
+---
+
+## Crear un backup de tu base de datos
+
+El primer paso es ubicar la base de datos que querés respaldar en el **Object Explorer** de SSMS.
+
+1. Clic derecho sobre la base de datos.
+2. **Tasks** (Tareas) → **Back Up...** (Respaldar).
+3. En el asistente vas a ver dos caminos principales: **guardar** la base de datos o **restaurarla** (esto último lo vemos más abajo).
+
+### Dónde guardar el archivo `.bak`
+
+SSMS suele proponer una ruta por defecto. Lo recomendable es **quitar esa ruta** y agregar una nueva, en un lugar accesible para vos.
+
+Una opción cómoda:
+
+- Carpeta: `C:\backups`
+- Nombre del archivo: por ejemplo `mi_empresa.bak`
+
+La extensión **`.bak`** es la que usa SQL Server para los respaldos. Le das **OK** y SSMS genera el archivo con el estado actual de la base de datos.
+
+<Callout type="tip" title="Dónde guardar el respaldo">
+  Podés guardar el `.bak` en el Escritorio, pero navegar hasta ahí desde SSMS suele ser incómodo. Una carpeta fija en `C:\backups` es más simple de encontrar cada vez que necesites restaurar.
+</Callout>
+
+---
+
+## Restaurar un backup
+
+Para volver a un estado anterior:
+
+1. Clic derecho sobre la base de datos (o sobre **Databases** si vas a restaurar sobre una existente).
+2. **Tasks** → **Restore** → **Database...**
+3. En **Source**, elegí **Device** (Dispositivo) y buscá el archivo `.bak` —por ejemplo en `C:\backups`.
+4. SSMS valida que el backup se puede leer. Si todo está bien, pasá a la pestaña **Options** (Opciones).
+
+### Sobrescribir la base de datos existente
+
+En **Options** tenés que marcar que **sobrescriba la base de datos existente** (*Overwrite the existing database*). Sin eso, la restauración puede fallar o no reemplazar los datos que tenés ahora.
+
+---
+
+## Errores comunes al restaurar
+
+### Conexiones activas
+
+Si tenés una aplicación, un script o una query abierta usando esa base de datos, SSMS puede mostrar un error del estilo: la base **no está en uso exclusivo** o **hay conexiones activas**.
+
+La solución está en la misma pestaña **Options**:
+
+- Marcá **Close existing connections** (Cerrar conexiones existentes).
+
+Con eso SSMS corta las sesiones que bloquean la restauración y podés continuar.
+
+### Versiones de SQL Server
+
+Otro punto importante: **la compatibilidad entre versiones no es simétrica**.
+
+| Dirección | ¿Funciona? |
+|-----------|------------|
+| Backup de SQL Server **2008** → restaurar en **2022** | Sí. SQL Server puede elevar/adaptar los datos a la versión nueva. |
+| Backup de **2022** → restaurar en **2008** | No. Te va a dar error. No podés “bajar” un backup a una versión más vieja. |
+
+Si trabajás con backups de clientes o de otro entorno, revisá siempre **qué versión generó el `.bak`** y en qué versión lo vas a restaurar.
+
+<Callout type="warning" title="Versiones">
+  Antes de restaurar un backup ajeno, confirmá la versión de origen. Restaurar en una instancia **igual o más nueva** suele funcionar; en una **más vieja**, no.
+</Callout>
+
+---
+
+## Flujo rápido de referencia
+
+**Backup**
+
+1. Clic derecho en la base de datos → **Tasks** → **Back Up...**
+2. Quitar ruta por defecto → **Add** → `C:\backups\nombre.bak`
+3. **OK**
+
+**Restore**
+
+1. **Tasks** → **Restore** → **Database...**
+2. **Device** → seleccionar el `.bak`
+3. **Options** → sobrescribir base existente + cerrar conexiones activas
+4. **OK**
+
+---
+
+## Resumen del video
+
+En este capítulo del curso SQL vimos:
+
+- Por qué los backups son fundamentales cuando manejás datos reales.
+- Cómo crear un respaldo `.bak` desde SSMS.
+- Dónde conviene guardar los archivos para encontrarlos fácil.
+- Cómo restaurar un backup eligiendo el dispositivo correcto.
+- Qué marcar en **Options** para sobrescribir la base y evitar bloqueos por conexiones.
+- La regla de versiones: subir de versión sí, bajar no.
+
+Con esto tenés una red de seguridad clara: podés experimentar, equivocarte y recuperar. Es una práctica que vas a usar mucho en el día a día.
+
+Si el video te sirvió, en YouTube también podés suscribirte, dejar like y comentar qué otro tema del curso SQL te gustaría ver a continuación.
