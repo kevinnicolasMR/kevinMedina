@@ -4,26 +4,71 @@ import { home } from '../../config/home';
 
 const { developer } = site;
 const { hero } = home;
+const stack = ['SQL Server', 'Java', 'Spring Boot', 'APIs REST', 'Git'];
 ---
 
 <section class="home-hero" aria-labelledby="home-hero-title">
   <div class="home-hero-grid">
-    <div class="home-hero-media">
-      <img
-        src={developer.image}
-        alt={developer.imageAlt}
-        width="480"
-        height="480"
-        loading="eager"
-        decoding="async"
-        class="home-hero-image"
-      />
-    </div>
-
     <div class="home-hero-content">
-      <p class="home-hero-eyebrow">{developer.role}</p>
+      <p class="home-hero-eyebrow">
+        <span class="home-hero-status" aria-hidden="true"></span>
+        {developer.role}
+      </p>
       <h1 id="home-hero-title">{hero.headline}</h1>
       <p class="home-hero-tagline">{hero.tagline}</p>
+
+      <div class="home-hero-actions">
+        <a
+          class="button button-youtube"
+          href={hero.primaryCta.href}
+          {...(hero.primaryCta.external
+            ? { rel: 'noopener noreferrer', target: '_blank' }
+            : {})}
+        >
+          {hero.primaryCta.label}
+        </a>
+        <a class="button button-outline" href={hero.secondaryCta.href}>
+          {hero.secondaryCta.label}
+        </a>
+      </div>
+
+      <ul class="home-hero-stack" aria-label="Tecnologías principales">
+        {stack.map((item) => <li>{item}</li>)}
+      </ul>
+    </div>
+
+    <div class="home-hero-lab" aria-label="Vista visual de trabajo como programador">
+      <div class="code-window">
+        <div class="code-window-bar" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+          <strong>kevin.dev</strong>
+        </div>
+        <pre><code><span class="code-muted">const</span> contenido = &#123;
+  foco: <span class="code-string">'SQL + Java'</span>,
+  estilo: <span class="code-string">'simple y practico'</span>,
+  objetivo: <span class="code-string">'aprender construyendo'</span>,
+&#125;;
+
+deploy(contenido);</code></pre>
+      </div>
+
+      <div class="home-profile-card">
+        <img
+          src={developer.image}
+          alt={developer.imageAlt}
+          width="480"
+          height="480"
+          loading="eager"
+          decoding="async"
+          class="home-hero-image"
+        />
+        <div>
+          <span class="profile-label">Programando con Kevin</span>
+          <strong>Backend, bases de datos y carrera IT.</strong>
+        </div>
+      </div>
     </div>
   </div>
 </section>

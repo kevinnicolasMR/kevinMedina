@@ -7,17 +7,17 @@ import { site } from './site';
 export const home = {
   hero: {
     headline:
-      'Desarrollo soluciones, enseño lo que aprendo y comparto experiencia real.',
+      'Aprende a programar con proyectos, SQL real y mentalidad de dev.',
     tagline:
-      'Programador en activo · Fullstack desde Uruguay · Creador de contenido en YouTube.',
+      'Backend developer desde Uruguay. Te enseño Java, SQL Server y buenas prácticas con ejemplos simples, directos y aplicables.',
     primaryCta: {
-      label: 'Ver canal',
+      label: 'Ver tutoriales',
       href: site.youtube.channelUrl,
       external: true,
     },
     secondaryCta: {
-      label: 'Conóceme',
-      href: '#sobre-mi',
+      label: 'Explorar recursos',
+      href: '/recursos',
     },
   },
   stats: [
@@ -33,37 +33,37 @@ export const home = {
   },
   videos: {
     id: 'youtube',
-    title: 'Videos destacados de YouTube',
+    title: 'Tutoriales para codear mejor',
     description:
-      'Tutoriales prácticos grabados en español. Cada video tiene su guía escrita con pasos detallados.',
+      'Videos cortos, prácticos y con guía escrita para que puedas pausar, copiar, probar y entender.',
   },
   pillars: {
-    title: 'Qué vas a encontrar aquí',
+    title: 'Tu ruta para mejorar como programador',
     description:
-      'Contenido pensado para aprender programación con enfoque práctico y experiencia real.',
+      'El contenido está organizado como una caja de herramientas: bases de datos, backend, recursos y carrera.',
     items: [
       {
-        icon: '🎬',
-        title: 'Tutoriales',
-        description: 'Guías paso a paso de SQL, Java y herramientas que uso a diario.',
+        icon: 'SQL',
+        title: 'SQL Server',
+        description: 'Consultas, relaciones, backups, GROUP BY, HAVING y casos reales de bases de datos.',
         href: '/sql',
       },
       {
-        icon: '💼',
-        title: 'Experiencia real',
-        description: 'Aprendizajes de proyectos internacionales y buenas prácticas aplicadas.',
-        href: '#experiencia',
+        icon: 'JAV',
+        title: 'Java backend',
+        description: 'Ejercicios, lógica, buenas prácticas y fundamentos para construir mejor.',
+        href: '/java',
       },
       {
-        icon: '🚀',
-        title: 'Consejos laborales',
-        description: 'Tips para crecer como desarrollador y destacar en entrevistas técnicas.',
-        href: '#blog',
+        icon: 'DEV',
+        title: 'Carrera IT',
+        description: 'Consejos de trabajo, entrevistas, portfolio y hábitos para crecer como dev.',
+        href: '/carrera',
       },
       {
-        icon: '📚',
-        title: 'Biblioteca de recursos',
-        description: 'Scripts, apuntes y ejemplos directos para estudiar y practicar.',
+        icon: 'DOC',
+        title: 'Recursos',
+        description: 'Apuntes, ejemplos y explicaciones escritas para estudiar con calma.',
         href: '/recursos',
       },
     ],

@@ -29,21 +29,61 @@ const breadcrumbs = [
   keywords={keywords}
   breadcrumbs={breadcrumbs}
 >
-  <section class="pillar-topics" aria-labelledby="recursos-articles-title">
-    <h2 id="recursos-articles-title">Biblioteca de recursos</h2>
+  <div class="resources-page">
+    <section class="resources-dashboard" aria-label="Resumen de recursos">
+      <div class="resources-console" aria-hidden="true">
+        <div class="resources-console-bar">
+          <span></span>
+          <span></span>
+          <span></span>
+          <strong>resources.json</strong>
+        </div>
+        <pre><code>&#123;
+  "modo": "estudiar",
+  "stack": ["SQL", "bases de datos"],
+  "objetivo": "practicar sin perder tiempo"
+&#125;</code></pre>
+      </div>
+
+      <ul class="resources-stats">
+        <li>
+          <strong>{articles.length}</strong>
+          <span>recursos publicados</span>
+        </li>
+        <li>
+          <strong>SQL</strong>
+          <span>apuntes y ejemplos</span>
+        </li>
+        <li>
+          <strong>DEV</strong>
+          <span>material para practicar</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="pillar-topics resources-library" aria-labelledby="recursos-articles-title">
+      <div class="resources-library-header">
+        <span class="resources-kicker">Biblioteca</span>
+        <h2 id="recursos-articles-title">Recursos listos para estudiar</h2>
+        <p>Guías escritas, ejemplos y explicaciones pensadas para volver cuando estés practicando.</p>
+      </div>
+
     {articles.length > 0 ? (
-      <ul class="article-list">
+      <ul class="article-list resources-list">
         {articles.map((article) => (
           <li>
-            <a href={getArticleUrl(article)}>
-              <span class="related-title">{article.data.title}</span>
+            <a class="resource-card" href={getArticleUrl(article)}>
+              <span class="resource-card-meta">{article.data.pillar.toUpperCase()} · Recurso</span>
+              <span class="related-title resource-card-title">{article.data.title}</span>
               <span class="related-description">{article.data.description}</span>
+              <span class="resource-card-cta">Abrir recurso</span>
             </a>
           </li>
         ))}
       </ul>
     ) : (
-      <p>Próximamente publicaremos scripts, apuntes y recursos para estudiar.</p>
+      <p class="resources-empty">Próximamente publicaremos scripts, apuntes y recursos para estudiar.</p>
     )}
-  </section>
+    </section>
+  </div>
 </PillarLayout>
