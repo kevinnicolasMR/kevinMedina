@@ -1,10 +1,18 @@
 ---
 interface Props {
-  name: 'youtube' | 'instagram' | 'linkedin';
+  name: 'youtube' | 'instagram' | 'linkedin' | 'search';
 }
 
 const { name } = Astro.props;
 ---
+
+{
+  name === 'search' && (
+    <svg class="social-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M10.8 3a7.8 7.8 0 0 1 6.18 12.56l3.73 3.73a1 1 0 0 1-1.42 1.42l-3.73-3.73A7.8 7.8 0 1 1 10.8 3Zm0 2a5.8 5.8 0 1 0 0 11.6 5.8 5.8 0 0 0 0-11.6Z" />
+    </svg>
+  )
+}
 
 {
   name === 'youtube' && (

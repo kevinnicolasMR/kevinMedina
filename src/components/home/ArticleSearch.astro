@@ -1,0 +1,112 @@
+---
+import type { ArticleEntry } from '../../lib/articles';
+import { getArticleUrl } from '../../lib/articles';
+
+interface Props {
+  articles: ArticleEntry[];
+}
+
+const { articles } = Astro.props;
+const searchItems = articles.map((article) => ({
+  title: article.data.title,
+  url: getArticleUrl(article),
+  searchText: [
+    article.data.title,
+    article.data.description,
+    article.data.pillar,
+    ...article.data.keywords,
+  ].join(' '),
+}));
+---
+
+<section class="home-section article-search-section" id="buscar" aria-labelledby="article-search-title">
+  <div class="container">
+    <div class="article-search-shell">
+      <div class="article-search-header">
+        <span class="article-search-kicker">Buscar contenido</span>
+        <h2 id="article-search-title">Encontrá rápido el artículo que necesitás</h2>
+      </div>
+
+      <div class="article-search-box">
+        <label class="sr-only" for="article-search-input">Buscar artículos</label>
+        <span class="article-search-icon" aria-hidden="true">⌕</span>
+        <input
+          id="article-search-input"
+          type="search"
+          placeholder="Buscar artículos..."
+          autocomplete="off"
+          data-article-search-input
+        />
+      </div>
+
+      <p class="article-search-status" data-article-search-status>
+        Escribí una palabra para ver coincidencias.
+      </p>
+
+      <ul class="article-search-results" data-article-search-results>
+        {searchItems.map((item) => (
+          <li data-article-search-item data-search-text={item.searchText} hidden>
+            <a class="article-search-card" href={item.url}>
+              <span class="article-search-title">{item.title}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script>
+  function normalizeSearch(value: string) {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+  }
+
+  function initArticleSearch() {
+    const input = document.querySelector<HTMLInputElement>('[data-article-search-input]');
+    const status = document.querySelector<HTMLElement>('[data-article-search-status]');
+    const items = Array.from(
+      document.querySelectorAll<HTMLElement>('[data-article-search-item]'),
+    );
+
+    if (!input || !status || items.length === 0) return;
+
+    const searchInput = input;
+    const statusElement = status;
+
+    function updateResults() {
+      const query = normalizeSearch(searchInput.value);
+
+      if (!query) {
+        items.forEach((item) => {
+          item.hidden = true;
+        });
+        statusElement.textContent = 'Escribí una palabra para ver coincidencias.';
+        return;
+      }
+
+      let matches = 0;
+
+      items.forEach((item) => {
+        const text = normalizeSearch(item.dataset.searchText || '');
+        const isMatch = text.includes(query);
+        item.hidden = !isMatch;
+        if (isMatch) matches += 1;
+      });
+
+      statusElement.textContent =
+        matches === 1
+          ? '1 coincidencia encontrada.'
+          : `${matches} coincidencias encontradas.`;
+    }
+
+    searchInput.addEventListener('input', updateResults);
+    updateResults();
+  }
+
+  initArticleSearch();
+  document.addEventListener('astro:page-load', initArticleSearch);
+</script>

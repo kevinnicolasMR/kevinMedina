@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import HomeHero from '../components/home/HomeHero.astro';
 import SocialProofBar from '../components/home/SocialProofBar.astro';
 import AboutSection from '../components/home/AboutSection.astro';
+import ArticleSearch from '../components/home/ArticleSearch.astro';
 import FeaturedVideos from '../components/home/FeaturedVideos.astro';
 import ContentPillars from '../components/home/ContentPillars.astro';
 import ExperienceSection from '../components/home/ExperienceSection.astro';
@@ -29,6 +30,7 @@ const articles = await getPublishedArticles();
     <div class="container">
       <HomeHero />
     </div>
+    <ArticleSearch articles={articles} />
     <FeaturedVideos articles={articles} />
     <ContentPillars />
     <!-- <FinalCTASection /> -->
