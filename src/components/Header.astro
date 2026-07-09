@@ -1,5 +1,6 @@
 ---
 import { site } from '../config/site';
+import SocialIcon from './SocialIcon.astro';
 
 const currentPath = Astro.url.pathname;
 
@@ -30,12 +31,18 @@ function isActive(href: string): boolean {
           <li>
             <a
               href={item.href}
+              class:list={['icon' in item && item.icon && 'nav-icon-link']}
+              aria-label={'icon' in item && item.icon ? item.label : undefined}
               aria-current={isActive(item.href) ? 'page' : undefined}
               {...('external' in item && item.external
                 ? { rel: 'noopener noreferrer', target: '_blank' }
                 : {})}
             >
-              {item.label}
+              {'icon' in item && item.icon ? (
+                <SocialIcon name={item.icon} />
+              ) : (
+                item.label
+              )}
             </a>
           </li>
         ))}
@@ -46,18 +53,20 @@ function isActive(href: string): boolean {
 
 <script>
   function initMobileNav() {
-    const header = document.querySelector('.site-header');
-    const toggle = document.querySelector('.nav-toggle');
-    const nav = document.querySelector('.site-nav');
+    const header = document.querySelector<HTMLElement>('.site-header');
+    const toggle = document.querySelector<HTMLButtonElement>('.nav-toggle');
+    const nav = document.querySelector<HTMLElement>('.site-nav');
     if (!header || !toggle || !nav) return;
 
+    const headerElement = header;
+    const toggleButton = toggle;
+    const navElement = nav;
     const mq = window.matchMedia('(min-width: 48rem)');
 
     function setOpen(open: boolean) {
-      if (!header) return;
-      header.classList.toggle('nav-is-open', open);
-      toggle.setAttribute('aria-expanded', String(open));
-      toggle.setAttribute(
+      headerElement.classList.toggle('nav-is-open', open);
+      toggleButton.setAttribute('aria-expanded', String(open));
+      toggleButton.setAttribute(
         'aria-label',
         open ? 'Cerrar menú de navegación' : 'Abrir menú de navegación',
       );
@@ -68,11 +77,11 @@ function isActive(href: string): boolean {
       setOpen(false);
     }
 
-    toggle.addEventListener('click', () => {
-      setOpen(!header.classList.contains('nav-is-open'));
+    toggleButton.addEventListener('click', () => {
+      setOpen(!headerElement.classList.contains('nav-is-open'));
     });
 
-    nav.querySelectorAll('a').forEach((link) => {
+    navElement.querySelectorAll('a').forEach((link) => {
       link.addEventListener('click', () => {
         if (!mq.matches) closeMenu();
       });

@@ -1,5 +1,6 @@
 ---
 import { site } from '../config/site';
+import SocialIcon from './SocialIcon.astro';
 
 const year = new Date().getFullYear();
 ---
@@ -41,10 +42,16 @@ const year = new Date().getFullYear();
 
     <div class="footer-column">
       <h3>Conecta</h3>
-      <ul class="footer-links">
+      <ul class="footer-links footer-social-links">
         {site.social.map((link) => (
           <li>
-            <a href={link.href} rel="noopener noreferrer" target="_blank">
+            <a
+              class="footer-social-link"
+              href={link.href}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <SocialIcon name={link.icon} />
               {link.label}
             </a>
           </li>

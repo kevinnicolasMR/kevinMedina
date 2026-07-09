@@ -1,0 +1,90 @@
+---
+interface Props {
+  fixedText: string;
+  words: string[];
+}
+
+const { fixedText, words } = Astro.props;
+const fallbackWord = words[0] ?? '';
+---
+
+<span
+  class="typewriter-text"
+  data-typewriter
+  data-words={JSON.stringify(words)}
+>
+  <span class="typewriter-fixed">{fixedText}</span>
+  <span class="typewriter-dynamic" data-typewriter-dynamic>{fallbackWord}</span>
+  <span class="typewriter-caret" aria-hidden="true"></span>
+</span>
+
+<script>
+  function initTypewriters() {
+    const prefersReducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
+
+    document.querySelectorAll('[data-typewriter]').forEach((element) => {
+      if (element.getAttribute('data-typewriter-ready') === 'true') return;
+
+      const dynamic = element.querySelector<HTMLElement>(
+        '[data-typewriter-dynamic]',
+      );
+      const wordsRaw = element.getAttribute('data-words') || '[]';
+      let words: string[] = [];
+
+      try {
+        const parsedWords = JSON.parse(wordsRaw);
+        words = Array.isArray(parsedWords)
+          ? parsedWords.filter((word): word is string => typeof word === 'string')
+          : [];
+      } catch {
+        words = [];
+      }
+
+      if (!dynamic || words.length === 0) return;
+
+      const dynamicElement = dynamic;
+      element.setAttribute('data-typewriter-ready', 'true');
+
+      if (prefersReducedMotion) {
+        dynamicElement.textContent = words[0];
+        return;
+      }
+
+      let wordIndex = 0;
+      let charIndex = words[0].length;
+      let deleting = true;
+
+      function tick() {
+        const currentWord = words[wordIndex];
+        dynamicElement.textContent = currentWord.slice(0, charIndex);
+
+        if (deleting) {
+          charIndex -= 1;
+
+          if (charIndex < 0) {
+            deleting = false;
+            wordIndex = (wordIndex + 1) % words.length;
+            charIndex = 0;
+          }
+        } else {
+          charIndex += 1;
+
+          if (charIndex > words[wordIndex].length) {
+            deleting = true;
+            window.setTimeout(tick, 1100);
+            return;
+          }
+        }
+
+        window.setTimeout(tick, deleting ? 48 : 86);
+      }
+
+      window.setTimeout(tick, 900);
+    });
+  }
+
+  initTypewriters();
+  document.addEventListener('astro:page-load', initTypewriters);
+</script>

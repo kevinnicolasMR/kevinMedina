@@ -35,18 +35,41 @@ export const site = {
     {
       label: 'YouTube',
       href: 'https://www.youtube.com/@ProgramandoConKevin/videos',
+      icon: 'youtube',
+    },
+    {
+      label: 'Instagram',
+      href: 'https://www.instagram.com/programandoconkevin/',
+      icon: 'instagram',
     },
     {
       label: 'LinkedIn',
       href: 'https://www.linkedin.com/in/kevinnicolasmr/', // TODO: URL real de LinkedIn
+      icon: 'linkedin',
     },
   ],
   defaultOgImage: '/og-default.png',
   navigation: [
     { label: 'Inicio', href: '/' },
     { label: 'Recursos', href: '/recursos' },
-    { label: 'YouTube', href: 'https://www.youtube.com/@ProgramandoConKevin/videos', external: true },
-    { label: 'Contacto', href: 'https://www.linkedin.com/in/kevinnicolasmr/' },
+    {
+      label: 'YouTube',
+      href: 'https://www.youtube.com/@ProgramandoConKevin/videos',
+      external: true,
+      icon: 'youtube',
+    },
+    {
+      label: 'Instagram',
+      href: 'https://www.instagram.com/programandoconkevin/',
+      external: true,
+      icon: 'instagram',
+    },
+    {
+      label: 'Contacto',
+      href: 'https://www.linkedin.com/in/kevinnicolasmr/',
+      external: true,
+      icon: 'linkedin',
+    },
   ],
   footer: {
     newsletterNote: 'Recibe novedades sobre tutoriales y artículos nuevos.',

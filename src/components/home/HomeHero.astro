@@ -1,10 +1,12 @@
 ---
 import { site } from '../../config/site';
 import { home } from '../../config/home';
+import TypewriterText from '../TypewriterText.astro';
 
 const { developer } = site;
 const { hero } = home;
 const stack = ['SQL Server', 'Java', 'Spring Boot', 'APIs REST', 'Git'];
+const typewriterWords = ['SQL', 'Java', 'proyectos reales'];
 ---
 
 <section class="home-hero" aria-labelledby="home-hero-title">
@@ -14,7 +16,9 @@ const stack = ['SQL Server', 'Java', 'Spring Boot', 'APIs REST', 'Git'];
         <span class="home-hero-status" aria-hidden="true"></span>
         {developer.role}
       </p>
-      <h1 id="home-hero-title">{hero.headline}</h1>
+      <h1 id="home-hero-title">
+        <TypewriterText fixedText="Aprende a programar con:" words={typewriterWords} />
+      </h1>
       <p class="home-hero-tagline">{hero.tagline}</p>
 
       <div class="home-hero-actions">
