@@ -1,0 +1,607 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { sqlPracticeExercises, sqlPracticeSetupSql } from '../config/sqlPractice';
+
+const title = 'Practicar SQL — Validador simple';
+const description =
+  'Ejercicios interactivos para practicar SQL en español: escribí consultas SELECT, WHERE, JOIN, GROUP BY y HAVING con feedback inmediato.';
+
+const exercises = sqlPracticeExercises;
+const setupSql = sqlPracticeSetupSql;
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonical="/practicar-sql"
+  keywords={['practicar SQL', 'ejercicios SQL', 'validador SQL', 'aprender SQL']}
+  fullWidth
+>
+  <section class="practice-page" data-sql-practice>
+    <div class="container">
+      <header class="practice-hero">
+        <span class="practice-kicker">SQL playground</span>
+        <h1>Practicá SQL sin instalar nada</h1>
+        <p>
+          Escribí una consulta, validá la estructura y recibí feedback al instante.
+          Este modo no ejecuta SQL real: revisa reglas básicas para ayudarte a practicar.
+        </p>
+      </header>
+
+      <div class="practice-layout">
+        <aside class="practice-sidebar" aria-label="Ejercicios SQL">
+          <h2>Ejercicios</h2>
+          <div class="practice-progress" data-practice-progress>
+            <strong>0/{exercises.length}</strong>
+            <span>ejercicios completados</span>
+          </div>
+          <div class="practice-exercise-list" role="list">
+            {exercises.map((exercise, index) => (
+              <button
+                type="button"
+                class:list={['practice-exercise-tab', index === 0 && 'is-active']}
+                data-exercise-tab={exercise.id}
+              >
+                <span>{exercise.title}</span>
+                <small>
+                  {exercise.level}
+                  <strong data-tab-state={exercise.id}>Pendiente</strong>
+                </small>
+              </button>
+            ))}
+          </div>
+        </aside>
+
+        <div class="practice-panel">
+          <div class="practice-card">
+            <div class="practice-card-header">
+              <div>
+                <span class="practice-level" data-exercise-level>{exercises[0].level}</span>
+                <h2 data-exercise-title>{exercises[0].title}</h2>
+              </div>
+              <button type="button" class="practice-solution-toggle" data-solution-toggle>
+                Ver solución
+              </button>
+            </div>
+
+            <p class="practice-prompt" data-exercise-prompt>{exercises[0].prompt}</p>
+
+            <div class="practice-tables" data-exercise-tables></div>
+
+            <div class="practice-editor">
+              <label for="sql-editor">Tu consulta SQL</label>
+              <textarea id="sql-editor" spellcheck="false" data-sql-editor>{exercises[0].starter}</textarea>
+            </div>
+
+            <div class="practice-actions">
+              <button type="button" class="practice-button-primary" data-validate-sql>
+                Validar consulta
+              </button>
+              <button type="button" class="practice-button-secondary" data-run-sql>
+                Ejecutar SQL real
+              </button>
+              <button type="button" class="practice-button-secondary" data-hint-sql>
+                Ver pista
+              </button>
+              <button type="button" class="practice-button-secondary" data-reset-sql>
+                Reiniciar
+              </button>
+            </div>
+
+            <div class="practice-hint" data-sql-hint hidden></div>
+            <div class="practice-feedback" data-sql-feedback aria-live="polite">
+              Escribí tu consulta y presioná “Validar consulta”.
+            </div>
+
+            <div class="practice-runner" data-sql-runner>
+              <div class="practice-runner-header">
+                <strong>Resultado SQLite en navegador</strong>
+                <span data-sql-engine-status>Cargando motor cuando lo ejecutes</span>
+              </div>
+              <div class="practice-runner-output" data-sql-runner-output>
+                Ejecutá tu consulta para ver la tabla real generada con datos de ejemplo.
+              </div>
+            </div>
+
+            <pre class="practice-solution" data-sql-solution hidden><code>{exercises[0].solution}</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script define:vars={{ exercises, setupSql }}>
+    const STORAGE_KEY = 'kevin-sql-practice-v1';
+    let sqlModulePromise;
+
+    function normalizeSql(sql) {
+      return sql
+        .replace(/--.*$/gm, ' ')
+        .replace(/\/\*[\s\S]*?\*\//g, ' ')
+        .replace(/[;\[\]`]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function isReadOnlySelect(sql) {
+      const normalizedSql = normalizeSql(sql);
+
+      return (
+        normalizedSql.startsWith('select') &&
+        !/\b(drop|delete|update|insert|alter|truncate|create|replace|attach|detach|pragma)\b/.test(
+          normalizedSql,
+        )
+      );
+    }
+
+    async function getSqlModule() {
+      if (!sqlModulePromise) {
+        sqlModulePromise = import('sql.js').then((module) => {
+          return module.default({
+            locateFile: () => '/sql-wasm.wasm',
+          });
+        });
+      }
+
+      return sqlModulePromise;
+    }
+
+    function getFirstResult(db, sql) {
+      const results = db.exec(sql);
+      return results[0] || { columns: [], values: [] };
+    }
+
+    function normalizeResult(result) {
+      return JSON.stringify({
+        columns: result.columns,
+        values: result.values,
+      });
+    }
+
+    function renderResultTable(result, matchesExpected) {
+      if (!result.columns.length) {
+        return `
+          <div class="practice-runner-message is-warning">
+            La consulta se ejecutó, pero no devolvió filas ni columnas para mostrar.
+          </div>
+        `;
+      }
+
+      const rows = result.values
+        .map((row) => {
+          return `
+            <tr>
+              ${row.map((value) => `<td>${escapeHtml(value)}</td>`).join('')}
+            </tr>
+          `;
+        })
+        .join('');
+
+      return `
+        <div class="practice-runner-message ${matchesExpected ? 'is-success' : 'is-warning'}">
+          ${
+            matchesExpected
+              ? 'El resultado coincide con la salida esperada.'
+              : 'La consulta corre, pero el resultado todavía no coincide con el esperado.'
+          }
+        </div>
+        <div class="practice-result-table-wrap">
+          <table class="practice-result-table">
+            <thead>
+              <tr>
+                ${result.columns.map((column) => `<th>${escapeHtml(column)}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function loadProgress() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      } catch {
+        return {};
+      }
+    }
+
+    function saveProgress(progress) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+    }
+
+    function getExerciseProgress(progress, exerciseId) {
+      return progress[exerciseId] || {
+        completed: false,
+        bestScore: 0,
+        attempts: 0,
+        draft: '',
+        hintIndex: 0,
+      };
+    }
+
+    function runTypedChecks(exercise, sql) {
+      const checks = [
+        {
+          label: 'Evitar consultas destructivas o de modificación',
+          passed: !/\b(drop|delete|update|insert|alter|truncate|create)\b/.test(sql),
+        },
+        {
+          label: 'La consulta debe comenzar con SELECT',
+          passed: /^\s*select\b/.test(sql),
+        },
+      ];
+
+      if (exercise.type === 'select') {
+        checks.push({
+          label: 'SELECT debe aparecer antes de FROM',
+          passed: /\bselect\b[\s\S]+\bfrom\b/.test(sql),
+        });
+      }
+
+      if (exercise.type === 'where') {
+        checks.push(
+          {
+            label: 'WHERE debe aparecer después de FROM',
+            passed: /\bfrom\b[\s\S]+\bwhere\b/.test(sql),
+          },
+          {
+            label: 'WHERE debería tener una comparación',
+            passed: /\bwhere\b[\s\S]*(=|like|in\s*\(|>|<)/.test(sql),
+          },
+        );
+      }
+
+      if (exercise.type === 'order') {
+        checks.push({
+          label: 'ORDER BY debe aparecer después de FROM',
+          passed: /\bfrom\b[\s\S]+\border\s+by\b/.test(sql),
+        });
+      }
+
+      if (exercise.type === 'join') {
+        checks.push(
+          {
+            label: 'JOIN debe tener una condición ON',
+            passed: /\bjoin\b[\s\S]+\bon\b/.test(sql),
+          },
+          {
+            label: 'La condición ON debería comparar columnas',
+            passed: /\bon\b[\s\S]*=/.test(sql),
+          },
+        );
+      }
+
+      if (exercise.type === 'group') {
+        checks.push({
+          label: 'GROUP BY debe acompañarse con una función agregada',
+          passed: /\b(count|sum|avg|min|max)\s*\(/.test(sql) && /\bgroup\s+by\b/.test(sql),
+        });
+      }
+
+      if (exercise.type === 'having') {
+        checks.push(
+          {
+            label: 'HAVING debe aparecer después de GROUP BY',
+            passed: /\bgroup\s+by\b[\s\S]+\bhaving\b/.test(sql),
+          },
+          {
+            label: 'HAVING debería filtrar una función agregada',
+            passed: /\bhaving\b[\s\S]*(count|sum|avg|min|max)\s*\(/.test(sql),
+          },
+        );
+      }
+
+      return checks;
+    }
+
+    function evaluateSql(exercise, rawSql) {
+      const sql = normalizeSql(rawSql);
+      const checks = [];
+
+      exercise.required.forEach((rule) => {
+        checks.push({
+          label: rule.label,
+          passed: new RegExp(rule.pattern, 'i').test(sql),
+        });
+      });
+
+      exercise.forbidden.forEach((rule) => {
+        checks.push({
+          label: rule.label,
+          passed: !new RegExp(rule.pattern, 'i').test(sql),
+        });
+      });
+
+      checks.push(...runTypedChecks(exercise, sql));
+
+      const passed = checks.filter((check) => check.passed);
+      const failed = checks.filter((check) => !check.passed);
+      const score = checks.length === 0 ? 0 : Math.round((passed.length / checks.length) * 100);
+
+      return { passed, failed, score };
+    }
+
+    function initSqlPractice() {
+      const root = document.querySelector('[data-sql-practice]');
+      if (!root) return;
+      if (root.dataset.sqlPracticeReady === 'true') return;
+      root.dataset.sqlPracticeReady = 'true';
+
+      const tabs = Array.from(root.querySelectorAll('[data-exercise-tab]'));
+      const progressSummary = root.querySelector('[data-practice-progress]');
+      const level = root.querySelector('[data-exercise-level]');
+      const title = root.querySelector('[data-exercise-title]');
+      const prompt = root.querySelector('[data-exercise-prompt]');
+      const tables = root.querySelector('[data-exercise-tables]');
+      const editor = root.querySelector('[data-sql-editor]');
+      const feedback = root.querySelector('[data-sql-feedback]');
+      const hintBox = root.querySelector('[data-sql-hint]');
+      const solution = root.querySelector('[data-sql-solution]');
+      const solutionCode = solution?.querySelector('code');
+      const validateButton = root.querySelector('[data-validate-sql]');
+      const runButton = root.querySelector('[data-run-sql]');
+      const hintButton = root.querySelector('[data-hint-sql]');
+      const resetButton = root.querySelector('[data-reset-sql]');
+      const solutionToggle = root.querySelector('[data-solution-toggle]');
+      const engineStatus = root.querySelector('[data-sql-engine-status]');
+      const runnerOutput = root.querySelector('[data-sql-runner-output]');
+
+      if (
+        !level ||
+        !title ||
+        !prompt ||
+        !tables ||
+        !editor ||
+        !feedback ||
+        !hintBox ||
+        !solution ||
+        !solutionCode ||
+        !validateButton ||
+        !runButton ||
+        !hintButton ||
+        !resetButton ||
+        !solutionToggle ||
+        !engineStatus ||
+        !runnerOutput
+      ) {
+        return;
+      }
+
+      let currentExercise = exercises[0];
+      let progress = loadProgress();
+
+      function updateProgressUi() {
+        const completedCount = exercises.filter((exercise) => {
+          return getExerciseProgress(progress, exercise.id).completed;
+        }).length;
+
+        if (progressSummary) {
+          progressSummary.innerHTML = `
+            <strong>${completedCount}/${exercises.length}</strong>
+            <span>ejercicios completados</span>
+          `;
+        }
+
+        tabs.forEach((tab) => {
+          const exerciseId = tab.dataset.exerciseTab;
+          const state = exerciseId ? getExerciseProgress(progress, exerciseId) : null;
+          const stateNode = exerciseId
+            ? root.querySelector(`[data-tab-state="${exerciseId}"]`)
+            : null;
+
+          tab.classList.toggle('is-completed', Boolean(state?.completed));
+
+          if (stateNode && state) {
+            stateNode.textContent = state.completed
+              ? 'Completado'
+              : state.bestScore > 0
+                ? `${state.bestScore}%`
+                : 'Pendiente';
+          }
+        });
+      }
+
+      function persistCurrentDraft() {
+        const state = getExerciseProgress(progress, currentExercise.id);
+        progress[currentExercise.id] = {
+          ...state,
+          draft: editor.value,
+        };
+        saveProgress(progress);
+      }
+
+      function renderTables() {
+        tables.innerHTML = currentExercise.tables
+          .map(
+            (table) => `
+              <article class="practice-table-card">
+                <strong>${table.name}</strong>
+                <span>${table.columns.join(' · ')}</span>
+              </article>
+            `,
+          )
+          .join('');
+      }
+
+      function setExercise(exerciseId) {
+        persistCurrentDraft();
+        const nextExercise = exercises.find((exercise) => exercise.id === exerciseId);
+        if (!nextExercise) return;
+
+        currentExercise = nextExercise;
+        const state = getExerciseProgress(progress, currentExercise.id);
+        level.textContent = currentExercise.level;
+        title.textContent = currentExercise.title;
+        prompt.textContent = currentExercise.prompt;
+        editor.value = state.draft || currentExercise.starter;
+        feedback.textContent = 'Escribí tu consulta y presioná “Validar consulta”.';
+        feedback.className = 'practice-feedback';
+        hintBox.hidden = true;
+        hintBox.textContent = '';
+        engineStatus.textContent = 'Cargando motor cuando lo ejecutes';
+        runnerOutput.textContent =
+          'Ejecutá tu consulta para ver la tabla real generada con datos de ejemplo.';
+        solution.hidden = true;
+        solutionCode.textContent = currentExercise.solution;
+        solutionToggle.textContent = 'Ver solución';
+        renderTables();
+
+        tabs.forEach((tab) => {
+          tab.classList.toggle('is-active', tab.dataset.exerciseTab === exerciseId);
+        });
+      }
+
+      function validateSql() {
+        const result = evaluateSql(currentExercise, editor.value);
+        const isCorrect = result.score === 100;
+        const isClose = result.score >= 70 && !isCorrect;
+        const state = getExerciseProgress(progress, currentExercise.id);
+
+        progress[currentExercise.id] = {
+          ...state,
+          completed: state.completed || isCorrect,
+          bestScore: Math.max(state.bestScore || 0, result.score),
+          attempts: (state.attempts || 0) + 1,
+          draft: editor.value,
+        };
+        saveProgress(progress);
+        updateProgressUi();
+
+        feedback.className = `practice-feedback ${isCorrect ? 'is-success' : 'is-warning'}`;
+        feedback.innerHTML = `
+          <strong>${
+            isCorrect
+              ? 'Bien hecho. Consulta válida.'
+              : isClose
+                ? `Vas bien. Puntaje: ${result.score}%`
+                : `Todavía falta ajustar algo. Puntaje: ${result.score}%`
+          }</strong>
+          <ul>
+            ${result.passed.map((item) => `<li class="is-ok">${item.label}</li>`).join('')}
+            ${result.failed.map((item) => `<li class="is-missing">${item.label}</li>`).join('')}
+          </ul>
+        `;
+      }
+
+      async function runSqlInBrowser() {
+        const rawSql = editor.value;
+
+        if (!isReadOnlySelect(rawSql)) {
+          engineStatus.textContent = 'Consulta bloqueada';
+          runnerOutput.innerHTML = `
+            <div class="practice-runner-message is-warning">
+              Por seguridad, este playground solo ejecuta consultas SELECT de lectura.
+            </div>
+          `;
+          return;
+        }
+
+        runButton.disabled = true;
+        engineStatus.textContent = 'Cargando SQLite WASM...';
+
+        try {
+          const SQL = await getSqlModule();
+          const userDb = new SQL.Database();
+          const expectedDb = new SQL.Database();
+
+          try {
+            userDb.run(setupSql);
+            expectedDb.run(setupSql);
+
+            const userResult = getFirstResult(userDb, rawSql);
+            const expectedResult = getFirstResult(expectedDb, currentExercise.expectedSql);
+            const matchesExpected =
+              normalizeResult(userResult) === normalizeResult(expectedResult);
+
+            engineStatus.textContent = matchesExpected
+              ? 'Ejecutado correctamente'
+              : 'Ejecutado con resultado distinto';
+            runnerOutput.innerHTML = renderResultTable(userResult, matchesExpected);
+          } finally {
+            userDb.close();
+            expectedDb.close();
+          }
+        } catch (error) {
+          engineStatus.textContent = 'Error SQL';
+          runnerOutput.innerHTML = `
+            <div class="practice-runner-message is-error">
+              ${escapeHtml(error.message || 'No se pudo ejecutar la consulta.')}
+            </div>
+          `;
+        } finally {
+          runButton.disabled = false;
+        }
+      }
+
+      function showHint() {
+        const state = getExerciseProgress(progress, currentExercise.id);
+        const hintIndex = Math.min(state.hintIndex || 0, currentExercise.hints.length - 1);
+        const hint = currentExercise.hints[hintIndex] || 'Revisá la consigna y compará con las tablas disponibles.';
+
+        hintBox.hidden = false;
+        hintBox.textContent = hint;
+
+        progress[currentExercise.id] = {
+          ...state,
+          hintIndex: Math.min(hintIndex + 1, currentExercise.hints.length - 1),
+          draft: editor.value,
+        };
+        saveProgress(progress);
+      }
+
+      tabs.forEach((tab) => {
+        tab.addEventListener('click', () => {
+          if (tab.dataset.exerciseTab) setExercise(tab.dataset.exerciseTab);
+        });
+      });
+
+      validateButton.addEventListener('click', validateSql);
+      runButton.addEventListener('click', runSqlInBrowser);
+      hintButton.addEventListener('click', showHint);
+
+      editor.addEventListener('input', () => {
+        persistCurrentDraft();
+      });
+
+      resetButton.addEventListener('click', () => {
+        const state = getExerciseProgress(progress, currentExercise.id);
+        progress[currentExercise.id] = {
+          ...state,
+          draft: '',
+          hintIndex: 0,
+        };
+        saveProgress(progress);
+        editor.value = currentExercise.starter;
+        feedback.textContent = 'Escribí tu consulta y presioná “Validar consulta”.';
+        feedback.className = 'practice-feedback';
+        hintBox.hidden = true;
+        hintBox.textContent = '';
+        engineStatus.textContent = 'Cargando motor cuando lo ejecutes';
+        runnerOutput.textContent =
+          'Ejecutá tu consulta para ver la tabla real generada con datos de ejemplo.';
+      });
+
+      solutionToggle.addEventListener('click', () => {
+        solution.hidden = !solution.hidden;
+        solutionToggle.textContent = solution.hidden ? 'Ver solución' : 'Ocultar solución';
+      });
+
+      setExercise(currentExercise.id);
+      updateProgressUi();
+    }
+
+    initSqlPractice();
+    document.addEventListener('astro:page-load', initSqlPractice);
+  </script>
+</BaseLayout>

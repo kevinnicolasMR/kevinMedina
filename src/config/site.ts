@@ -52,6 +52,7 @@ export const site = {
   navigation: [
     { label: 'Inicio', href: '/' },
     { label: 'Recursos', href: '/recursos' },
+    { label: 'Practicar SQL', href: '/practicar-sql' },
     { label: 'Buscar', href: '/#buscar', icon: 'search' },
     {
       label: 'YouTube',
