@@ -2,7 +2,7 @@ const CACHE_NAME = 'kevin-medina-pwa-v1';
 const CORE_ASSETS = [
   '/',
   '/manifest.webmanifest',
-  '/favicon.svg',
+  '/images/faviconkm.png',
   '/images/pwa-icon-192.png',
   '/images/pwa-icon-512.png',
   '/images/pwa-maskable-512.png',
