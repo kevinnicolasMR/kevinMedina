@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import CodeBackground from '../components/home/CodeBackground.astro';
 import HomeHero from '../components/home/HomeHero.astro';
 import SocialProofBar from '../components/home/SocialProofBar.astro';
 import AboutSection from '../components/home/AboutSection.astro';
@@ -27,6 +28,7 @@ const articles = await getPublishedArticles();
   fullWidth
 >
   <div class="home-page">
+    <CodeBackground />
     <div class="container">
       <HomeHero />
     </div>

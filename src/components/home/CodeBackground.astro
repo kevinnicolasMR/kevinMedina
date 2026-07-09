@@ -1,0 +1,24 @@
+---
+const symbols = [
+  '</>',
+  '{ }',
+  'SQL',
+  'Java',
+  '=>',
+  'API',
+  '#',
+  'git',
+  'SELECT',
+  '[]',
+  '&&',
+  'npm',
+  '01',
+  'JSON',
+];
+---
+
+<div class="code-background" aria-hidden="true">
+  {symbols.map((symbol, index) => (
+    <span class={`code-float code-float-${index + 1}`}>{symbol}</span>
+  ))}
+</div>
